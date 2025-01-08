@@ -20,6 +20,8 @@ class AuthController extends Controller
 			return send_response('Invalid Credentials', 401);
 		}
 
+		// $2y$12$hI6LRCJHQpk.50GGdLVRwexIof8giUxWUk9wdxw7p3SiUYa4SclwS
+
 		/** @var User $user **/
 		$user = Auth::guard('agent')->user();
 		$token = $user->createToken('token')->plainTextToken;
@@ -34,7 +36,31 @@ class AuthController extends Controller
 		]);
 	}
 
-	public function register(Request $request) {}
+	public function register(Request $request)
+	{
+		$request->validate([
+			'name' => 'required',
+			'email' => 'required|email|unique:users',
+			'password' => 'required|confirmed',
+		]);
+
+		$user = User::create([
+			'name' => $request->name,
+			'email' => $request->email,
+			'password' => bcrypt($request->password),
+		]);
+
+		$token = $user->createToken('token')->plainTextToken;
+
+		return response()->json([
+			'message' => 'Registration Successful',
+			'status' => 201,
+			'data' => [
+				'token' => $token,
+				'user' => $user,
+			]
+		]);
+	}
 
 	public function updateProfile(Request $request) {}
 
