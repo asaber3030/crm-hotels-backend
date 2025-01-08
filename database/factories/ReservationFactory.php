@@ -1,39 +1,26 @@
 <?php
 
-namespace App\Models;
+namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Reservation;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ReservationFactory extends Model
+class ReservationFactory extends Factory
 {
-  use HasFactory, SoftDeletes;
-
-  protected $fillable = [
-    'client_id',
-    'agent_id',
-    'reservation_date',
-    'notes',
-  ];
-
   /**
-   * Define the relationship with the Client model.
+   * Define the model's default state.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return array
    */
-  public function client()
+  public function definition()
   {
-    return $this->belongsTo(Client::class);
-  }
-
-  /**
-   * Define the relationship with the Agent model.
-   *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-   */
-  public function agent()
-  {
-    return $this->belongsTo(Agent::class);
+    return [
+      'client_id' => \App\Models\Client::factory(), // Randomly assign an existing client
+      'agent_id' => \App\Models\Agent::factory(), // Randomly assign an existing agent
+      'reservation_date' => $this->faker->dateTimeBetween('now', '+1 year')->format('Y-m-d'), // Random reservation date
+      'notes' => $this->faker->sentence(), // Random notes
+      'created_at' => now(),
+      'updated_at' => now(),
+    ];
   }
 }

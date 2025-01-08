@@ -16,8 +16,7 @@ class CityFactory extends Factory
     return [
       'name' => $this->faker->city(), // Generates a random city name
       'state' => $this->faker->randomElement(['pending', 'approved', 'rejected']), // Random state
-      'created_at' => now(),
-      'updated_at' => now(),
+
     ];
   }
 }
