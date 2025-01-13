@@ -20,5 +20,5 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Start the application
-CMD ["/start.sh"]
+# Run migrations and start the application
+CMD php artisan migrate --force && /start.sh
