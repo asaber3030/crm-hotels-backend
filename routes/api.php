@@ -15,12 +15,13 @@ use App\Http\Controllers\RateController;
 use App\Http\Controllers\AirportReservationController;
 use App\Http\Controllers\CarReservationController;
 use App\Http\Controllers\HotelReservationController;
+use App\Http\Controllers\PaymentTypeController;
+use App\Http\Controllers\UserController;
 
 Route::as('api.')->prefix('v1/')->group(function () {
 
 	Route::controller(AuthController::class)->group(function () {
 		Route::post('login', 'login')->name('login');
-		Route::post('register', 'register')->name('register');
 
 		Route::middleware('auth:sanctum')->group(function () {
 			Route::get('me', 'me');
@@ -53,6 +54,10 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::get('/clients-trashed', [ClientController::class, 'trashed']);
 		Route::patch('/clients/{id}/restore', [ClientController::class, 'restore']);
 
+		Route::apiResource('users', UserController::class);
+		Route::get('/users-trashed', [UserController::class, 'trashed']);
+		Route::patch('/users/{id}/restore', [UserController::class, 'restore']);
+
 		Route::apiResource('drivers', DriverController::class);
 		Route::get('/drivers-trashed', [DriverController::class, 'trashed']);
 		Route::patch('/drivers/{id}/restore', [DriverController::class, 'restore']);
@@ -84,5 +89,9 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::apiResource('rates', RateController::class);
 		Route::get('/rates-trashed', [RateController::class, 'trashed']);
 		Route::patch('/rates/{id}/restore', [RateController::class, 'restore']);
+
+		Route::apiResource('payment-types', PaymentTypeController::class);
+		Route::get('/payment-types-trashed', [PaymentTypeController::class, 'trashed']);
+		Route::patch('/payment-types/{id}/restore', [PaymentTypeController::class, 'restore']);
 	});
 });

@@ -18,7 +18,7 @@ class ClientController extends Controller
 		$request->validate([
 			'name' => 'required|string|max:255',
 			'email' => 'required|email|unique:clients,email',
-			'phone' => 'required|string|max:15',
+			'phone' => 'required|string|max:11|regex:/^01[0125][0-9]{8}$/|unique:clients,phone',
 			'nationality' => 'required|string|max:255',
 		]);
 
@@ -48,7 +48,7 @@ class ClientController extends Controller
 		$request->validate([
 			'name' => 'sometimes|string|max:255',
 			'email' => 'sometimes|email|unique:clients,email,' . $id,
-			'phone' => 'sometimes|string|max:15',
+			'phone' => 'sometimes|string|regex:/^01[0125][0-9]{8}$/|max:11|unique:clients,phone,' . $id,
 			'nationality' => 'sometimes|string|max:255',
 		]);
 
