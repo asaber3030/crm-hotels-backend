@@ -9,7 +9,7 @@ class CarReservationController extends Controller
 {
 	public function index()
 	{
-		$carReservations = CarReservation::orderBy('id', 'desc')->paginate();
+		$carReservations = CarReservation::with(['driver', 'reservation'])->orderBy('id', 'desc')->paginate();
 		return send_response('Car reservations retrieved successfully', 200, $carReservations);
 	}
 

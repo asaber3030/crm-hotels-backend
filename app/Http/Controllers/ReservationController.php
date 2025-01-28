@@ -13,7 +13,7 @@ class ReservationController extends Controller
 
 	public function index()
 	{
-		$reservations = Reservation::orderBy('id', 'desc')->paginate();
+		$reservations = Reservation::with(['client', 'agent'])->orderBy('id', 'desc')->paginate();
 		return send_response('Reservations retrieved successfully', 200, $reservations);
 	}
 

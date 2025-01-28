@@ -9,7 +9,7 @@ class HotelReservationController extends Controller
 {
 	public function index()
 	{
-		$hotelReservations = HotelReservation::orderBy('id', 'desc')->paginate();
+		$hotelReservations = HotelReservation::with(['rate', 'hotel', 'meal', 'city', 'company', 'reservation'])->orderBy('id', 'desc')->paginate();
 		return send_response('Hotel reservations retrieved successfully', 200, $hotelReservations);
 	}
 
