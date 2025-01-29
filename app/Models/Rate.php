@@ -11,4 +11,5 @@ class Rate extends Model
 	use SoftDeletes, HasFactory;
 	protected $table = 'rates';
 	protected $fillable = ['name', 'state'];
+	protected $hidden = ['deleted_at'];
 }

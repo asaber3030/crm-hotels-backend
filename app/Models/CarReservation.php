@@ -22,6 +22,7 @@ class CarReservation extends Model
 		'comments',
 		'price'
 	];
+	protected $hidden = ['deleted_at'];
 
 	public function driver()
 	{

@@ -28,6 +28,8 @@ class AirportReservation extends Model
     'statment',
   ];
 
+  protected $hidden = ['deleted_at'];
+
   public function reservation()
   {
     return $this->belongsTo(Reservation::class, 'reservation_id', 'id');

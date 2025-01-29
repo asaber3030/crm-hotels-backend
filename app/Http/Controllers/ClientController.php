@@ -9,7 +9,7 @@ class ClientController extends Controller
 {
 	public function index()
 	{
-		$clients = Client::orderBy('id', 'desc')->paginate();
+		$clients = Client::orderBy('id', 'desc')->simplePaginate();
 		return send_response('Clients retrieved successfully', 200, $clients);
 	}
 
@@ -70,7 +70,7 @@ class ClientController extends Controller
 
 	public function trashed()
 	{
-		$deletedClients = Client::onlyTrashed()->paginate();
+		$deletedClients = Client::onlyTrashed()->simplePaginate();
 		return send_response('Deleted clients retrieved successfully', 200, $deletedClients);
 	}
 

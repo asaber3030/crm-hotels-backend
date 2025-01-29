@@ -14,7 +14,7 @@ class UserController extends Controller
 
 	public function index()
 	{
-		$users = User::orderBy('id', 'desc')->paginate();
+		$users = User::orderBy('id', 'desc')->simplePaginate();
 		return send_response('Users retrieved successfully', 200, $users);
 	}
 
@@ -85,7 +85,7 @@ class UserController extends Controller
 
 	public function trashed()
 	{
-		$deletedUsers = User::onlyTrashed()->paginate();
+		$deletedUsers = User::onlyTrashed()->simplePaginate();
 		return send_response('Deleted Users retrieved successfully', 200, $deletedUsers);
 	}
 

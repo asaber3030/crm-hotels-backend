@@ -29,6 +29,8 @@ class HotelReservation extends Model
 		'confirmation_number',
 		'price'
 	];
+	protected $hidden = ['deleted_at'];
+
 
 	public function hotel()
 	{

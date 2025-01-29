@@ -18,6 +18,8 @@ class Hotel extends Model
 		'phone_number',
 		'email',
 	];
+	protected $hidden = ['deleted_at'];
+
 
 	public function city()
 	{

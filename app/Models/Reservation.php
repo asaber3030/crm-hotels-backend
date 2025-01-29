@@ -16,8 +16,9 @@ class Reservation extends Model
 		'client_id',
 		'agent_id',
 		'reservation_date',
-		'notes'
+		'notes',
 	];
+	protected $hidden = ['deleted_at'];
 
 	public function client()
 	{
@@ -29,8 +30,18 @@ class Reservation extends Model
 		return $this->belongsTo(Agent::class, 'agent_id', 'id');
 	}
 
-	public function car_reservations()
+	public function car()
 	{
-		return $this->hasMany(CarReservation::class, 'reservation_id', 'id');
+		return $this->hasOne(CarReservation::class, 'reservation_id', 'id');
+	}
+
+	public function reservation()
+	{
+		return $this->hasOne(HotelReservation::class, 'reservation_id', 'id');
+	}
+
+	public function airport()
+	{
+		return $this->hasOne(AirportReservation::class, 'reservation_id', 'id');
 	}
 }

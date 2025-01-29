@@ -44,10 +44,12 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('reservations', ReservationController::class);
 		Route::get('/reservations-trashed', [ReservationController::class, 'trashed']);
+		Route::get('/reservations/status/{status}', [ReservationController::class, 'filter_status']);
+		Route::get('/reservations-option-date', [ReservationController::class, 'option_date_data']);
 		Route::controller(ReservationController::class)->prefix('reservations')->group(function () {
-			Route::get('/{id}/car-reservations', 'carreservations');
-			Route::get('/{id}/hotel-reservations', 'hotelReservations');
-			Route::get('/{id}/airport-reservations', 'airportReservations');
+			Route::get('/{id}/car-reservation', 'carReservation');
+			Route::get('/{id}/hotel-reservation', 'hotelReservation');
+			Route::get('/{id}/airport-reservation', 'airportReservation');
 		});
 
 		Route::apiResource('clients', ClientController::class);

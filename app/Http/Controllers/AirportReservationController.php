@@ -9,7 +9,7 @@ class AirportReservationController extends Controller
 {
 	public function index()
 	{
-		$reservations = AirportReservation::orderBy('id', 'desc')->paginate();
+		$reservations = AirportReservation::orderBy('id', 'desc')->simplePaginate();
 		return send_response('Airport reservations retrieved successfully', 200, $reservations);
 	}
 
@@ -112,7 +112,7 @@ class AirportReservationController extends Controller
 
 	public function trashed()
 	{
-		$deletedReservations = AirportReservation::onlyTrashed()->paginate();
+		$deletedReservations = AirportReservation::onlyTrashed()->simplePaginate();
 		return send_response('Deleted airport reservations retrieved successfully', 200, $deletedReservations);
 	}
 
