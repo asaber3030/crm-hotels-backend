@@ -66,7 +66,7 @@ class RateController extends Controller
 
   public function trashed()
   {
-    $deletedRates = Rate::onlyTrashed()->simplePaginate();
+    $deletedRates = Rate::onlyTrashed()->paginate();
     return send_response('Deleted rates retrieved successfully', 200, $deletedRates);
   }
 

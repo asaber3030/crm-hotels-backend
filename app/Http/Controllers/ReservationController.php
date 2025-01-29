@@ -48,7 +48,7 @@ class ReservationController extends Controller
 			$query->whereHas('reservation', fn($q) => $q->whereDate('check_out', '<=', $check_out));
 		}
 
-		$reservations = $query->orderBy('id', 'desc')->simplePaginate();
+		$reservations = $query->orderBy('id', 'desc')->paginate();
 
 		return send_response('Reservations retrieved successfully', 200, $reservations);
 	}
@@ -80,7 +80,7 @@ class ReservationController extends Controller
 				$q->whereBetween('option_date', [$option_date_from, $option_date_to])
 			);
 		}
-		$reservations = $query->orderBy('id', 'desc')->simplePaginate();
+		$reservations = $query->orderBy('id', 'desc')->paginate();
 		return send_response('Reservations retrieved successfully', 200, $reservations);
 	}
 
@@ -119,7 +119,7 @@ class ReservationController extends Controller
 			$query->whereHas('reservation', fn($q) => $q->whereDate('check_out', '<=', $check_out));
 		}
 
-		$reservations = $query->orderBy('id', 'desc')->simplePaginate();
+		$reservations = $query->orderBy('id', 'desc')->paginate();
 
 		return send_response('Reservations retrieved successfully', 200, $reservations);
 	}
@@ -190,7 +190,7 @@ class ReservationController extends Controller
 
 	public function trashed()
 	{
-		$deletedReservations = Reservation::onlyTrashed()->simplePaginate();
+		$deletedReservations = Reservation::onlyTrashed()->paginate();
 		return send_response('Deleted reservations retrieved successfully', 200, $deletedReservations);
 	}
 

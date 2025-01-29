@@ -9,7 +9,7 @@ class CompanyController extends Controller
 {
   public function index()
   {
-    $companies = Company::orderBy('id', 'desc')->simplePaginate();
+    $companies = Company::orderBy('id', 'desc')->paginate();
     return send_response('Companies retrieved successfully', 200, $companies);
   }
 
@@ -59,7 +59,7 @@ class CompanyController extends Controller
 
   public function trashed()
   {
-    $deletedCompanies = Company::onlyTrashed()->simplePaginate();
+    $deletedCompanies = Company::onlyTrashed()->paginate();
     return send_response('Deleted companies retrieved successfully', 200, $deletedCompanies);
   }
 

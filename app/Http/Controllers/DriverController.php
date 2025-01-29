@@ -9,7 +9,7 @@ class DriverController extends Controller
 {
 	public function index()
 	{
-		$drivers = Driver::orderBy('id', 'desc')->simplePaginate();
+		$drivers = Driver::orderBy('id', 'desc')->paginate();
 		return send_response('Drivers retrieved successfully', 200, $drivers);
 	}
 
@@ -59,7 +59,7 @@ class DriverController extends Controller
 
 	public function trashed()
 	{
-		$deletedDrivers = Driver::onlyTrashed()->simplePaginate();
+		$deletedDrivers = Driver::onlyTrashed()->paginate();
 		return send_response('Deleted drivers retrieved successfully', 200, $deletedDrivers);
 	}
 

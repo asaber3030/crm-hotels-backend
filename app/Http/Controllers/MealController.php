@@ -9,7 +9,7 @@ class MealController extends Controller
 {
 	public function index()
 	{
-		$meals = Meal::orderBy('id', 'desc')->simplePaginate();
+		$meals = Meal::orderBy('id', 'desc')->paginate();
 		return send_response('Meals retrieved successfully', 200, $meals);
 	}
 
@@ -66,7 +66,7 @@ class MealController extends Controller
 
 	public function trashed()
 	{
-		$deletedMeals = Meal::onlyTrashed()->simplePaginate();
+		$deletedMeals = Meal::onlyTrashed()->paginate();
 		return send_response('Deleted meals retrieved successfully', 200, $deletedMeals);
 	}
 

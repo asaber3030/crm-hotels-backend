@@ -9,7 +9,7 @@ class CarReservationController extends Controller
 {
 	public function index()
 	{
-		$carReservations = CarReservation::with(['driver', 'reservation'])->orderBy('id', 'desc')->simplePaginate();
+		$carReservations = CarReservation::with(['driver', 'reservation'])->orderBy('id', 'desc')->paginate();
 		return send_response('Car reservations retrieved successfully', 200, $carReservations);
 	}
 
@@ -104,7 +104,7 @@ class CarReservationController extends Controller
 
 	public function trashed()
 	{
-		$deletedCarReservations = CarReservation::onlyTrashed()->simplePaginate();
+		$deletedCarReservations = CarReservation::onlyTrashed()->paginate();
 		return send_response('Deleted car reservations retrieved successfully', 200, $deletedCarReservations);
 	}
 

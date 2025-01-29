@@ -66,7 +66,7 @@ class PaymentTypeController extends Controller
 
   public function trashed()
   {
-    $deletedtypes = PaymentType::onlyTrashed()->simplePaginate();
+    $deletedtypes = PaymentType::onlyTrashed()->paginate();
     return send_response('Deleted types retrieved successfully', 200, $deletedtypes);
   }
 

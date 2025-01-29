@@ -10,7 +10,7 @@ class AgentController extends Controller
 {
 	public function index()
 	{
-		$agents = Agent::orderBy('id', 'desc')->simplePaginate();
+		$agents = Agent::orderBy('id', 'desc')->paginate();
 		return send_response('Agents retrieved successfully', 200, $agents);
 	}
 
@@ -79,7 +79,7 @@ class AgentController extends Controller
 
 	public function trashed()
 	{
-		$deletedAgents = Agent::onlyTrashed()->simplePaginate();
+		$deletedAgents = Agent::onlyTrashed()->paginate();
 		return send_response('Deleted agents retrieved successfully', 200, $deletedAgents);
 	}
 

@@ -9,7 +9,7 @@ class HotelReservationController extends Controller
 {
 	public function index()
 	{
-		$hotelReservations = HotelReservation::with(['rate', 'hotel', 'meal', 'city', 'company', 'reservation'])->orderBy('id', 'desc')->simplePaginate();
+		$hotelReservations = HotelReservation::with(['rate', 'hotel', 'meal', 'city', 'company', 'reservation'])->orderBy('id', 'desc')->paginate();
 		return send_response('Hotel reservations retrieved successfully', 200, $hotelReservations);
 	}
 
@@ -139,7 +139,7 @@ class HotelReservationController extends Controller
 
 	public function trashed()
 	{
-		$deletedHotelReservations = HotelReservation::onlyTrashed()->simplePaginate();
+		$deletedHotelReservations = HotelReservation::onlyTrashed()->paginate();
 		return send_response('Deleted hotel reservations retrieved successfully', 200, $deletedHotelReservations);
 	}
 

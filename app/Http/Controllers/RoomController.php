@@ -9,7 +9,7 @@ class RoomController extends Controller
 {
 	public function index()
 	{
-		$rooms = Room::orderBy('id', 'desc')->with('hotel')->simplePaginate();
+		$rooms = Room::orderBy('id', 'desc')->with('hotel')->paginate();
 		return send_response('Rooms retrieved successfully', 200, $rooms);
 	}
 
@@ -70,7 +70,7 @@ class RoomController extends Controller
 
 	public function trashed()
 	{
-		$deletedRooms = Room::with('hotel')->onlyTrashed()->simplePaginate();
+		$deletedRooms = Room::with('hotel')->onlyTrashed()->paginate();
 		return send_response('Deleted rooms retrieved successfully', 200, $deletedRooms);
 	}
 
