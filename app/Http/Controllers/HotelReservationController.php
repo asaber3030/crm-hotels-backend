@@ -28,7 +28,7 @@ class HotelReservationController extends Controller
 			'view' => 'required|string|max:255',
 			'pax_count' => 'required|integer|min:1',
 			'adults' => 'required|integer|min:1',
-			'status' => 'required|string|in:in_revision,confirmed,refunded,cancelled,guaranteed',
+			'status' => 'required|string|in:new,in_revision,confirmed,refunded,cancelled,guaranteed',
 			'children' => 'required|integer|min:0',
 			'option_date' => 'required|date',
 			'confirmation_number' => 'required|string|max:255',
@@ -94,7 +94,7 @@ class HotelReservationController extends Controller
 			'check_out' => 'sometimes|date|after:check_in',
 			'rooms_count' => 'sometimes|integer|min:1',
 			'view' => 'sometimes|string|max:255',
-			'status' => 'sometimes|string|in:in_revision,confirmed,refunded,cancelled,guaranteed',
+			'status' => 'sometimes|string|in:new,in_revision,confirmed,refunded,cancelled,guaranteed',
 			'pax_count' => 'sometimes|integer|min:1',
 			'adults' => 'sometimes|integer|min:1',
 			'children' => 'sometimes|integer|min:0',
@@ -153,5 +153,32 @@ class HotelReservationController extends Controller
 
 		$hotelReservation->restore();
 		return send_response('Hotel reservation restored successfully', 200, $hotelReservation);
+	}
+
+	public function change_status($id, Request $request)
+	{
+		$request->validate([
+			'status' => 'required|string|in:new,in_revision,confirmed,refunded,cancelled,guaranteed',
+		]);
+
+		$hotelReservation = HotelReservation::find($id);
+		if (!$hotelReservation) {
+			return send_response('Hotel reservation not found', 404);
+		}
+
+		HotelReservation::where('id', $id)->update(['status' => $request->status]);
+		$hotelReservation = HotelReservation::find($id);
+		return send_response('Hotel reservation status updated successfully', 200, $hotelReservation);
+	}
+
+	public function send_voucher($id)
+	{
+		$hotelReservation = HotelReservation::find($id);
+		if (!$hotelReservation) {
+			return send_response('Hotel reservation not found', 404);
+		}
+		HotelReservation::where('id', $id)->update(['status' => 'guaranteed']);
+		$hotelReservation = HotelReservation::find($id);
+		return send_response('Hotel reservation status updated successfully', 200, $hotelReservation);
 	}
 }

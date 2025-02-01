@@ -86,7 +86,7 @@ class ReservationController extends Controller
 			$query->whereHas('reservation', fn($q) => $q->whereDate('check_out', '=', $check_out));
 		}
 
-		$reservations = $query->paginate();
+		$reservations = $query->orderBy('id', 'desc')->paginate();
 
 		return send_response('Reservations retrieved successfully', 200, $reservations);
 	}

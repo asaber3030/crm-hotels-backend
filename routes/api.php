@@ -32,16 +32,11 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 	Route::get('/email-attachments/{filename}', function ($filename) {
 		$path = public_path("email_attachments/{$filename}");
-
 		if (!file_exists($path)) {
 			abort(404);
 		}
-
 		return Response::download($path, $filename);
 	});
-
-	Route::post('test-mail', [EmailController::class, 'test_email']);
-
 
 	Route::middleware('auth:sanctum')->group(function () {
 
@@ -101,6 +96,8 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::apiResource('hotel-reservations', HotelReservationController::class);
 		Route::get('/hotel-reservations-trashed', [HotelReservationController::class, 'trashed']);
 		Route::patch('/hotel-reservations/{id}/restore', [HotelReservationController::class, 'restore']);
+		Route::patch('/hotel-reservations/{id}/change-status', [HotelReservationController::class, 'change_status']);
+		Route::post('/hotel-reservations/{id}/send-voucher', [HotelReservationController::class, 'send_voucher']);
 
 		Route::apiResource('meals', MealController::class);
 		Route::get('/meals-trashed', [MealController::class, 'trashed']);
