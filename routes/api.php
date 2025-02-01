@@ -14,9 +14,11 @@ use	App\Http\Controllers\MealController;
 use App\Http\Controllers\RateController;
 use App\Http\Controllers\AirportReservationController;
 use App\Http\Controllers\CarReservationController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\HotelReservationController;
 use App\Http\Controllers\PaymentTypeController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Response;
 
 Route::as('api.')->prefix('v1/')->group(function () {
 
@@ -28,7 +30,23 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		});
 	});
 
+	Route::get('/email-attachments/{filename}', function ($filename) {
+		$path = public_path("email_attachments/{$filename}");
+
+		if (!file_exists($path)) {
+			abort(404);
+		}
+
+		return Response::download($path, $filename);
+	});
+
+	Route::post('test-mail', [EmailController::class, 'test_email']);
+
+
 	Route::middleware('auth:sanctum')->group(function () {
+
+		Route::post('send-mail', [EmailController::class, 'send_email']);
+
 		Route::apiResource('cities', CityController::class);
 		Route::get('/cities-trashed', [CityController::class, 'trashed']);
 		Route::patch('/cities/{id}/restore', [CityController::class, 'restore']);

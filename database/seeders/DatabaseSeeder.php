@@ -26,18 +26,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        AirportReservation::factory(10)->create();
-        CarReservation::factory(10)->create();
-        City::factory(10)->create();
-        Client::factory(10)->create();
-        Company::factory(10)->create();
-        Driver::factory(10)->create();
-        Hotel::factory(10)->create();
-        HotelReservation::factory(10)->create();
-        Meal::factory(10)->create();
-        Rate::factory(10)->create();
-        Reservation::factory(10)->create();
-        Room::factory(10)->create();
-        Agent::factory(10)->create();
+        AirportReservation::factory(50)->create();
+        CarReservation::factory(50)->create();
+        City::factory(50)->create();
+        Client::factory(50)->create();
+        Company::factory(50)->create();
+        Driver::factory(50)->create();
+        Hotel::factory(50)->create();
+        HotelReservation::factory(50)->create();
+        Meal::factory(50)->create();
+        Rate::factory(50)->create();
+        Reservation::factory(50)->create();
+        Room::factory(50)->create();
+        Agent::factory(50)->create();
     }
 }

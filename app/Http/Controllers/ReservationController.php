@@ -16,110 +16,77 @@ class ReservationController extends Controller
 		$status = $request->query('status');
 		$check_in = $request->query('check_in');
 		$check_out = $request->query('check_out');
-
-		$query = Reservation::with([
-			'client:id,name',
-			'agent:id,name',
-			'reservation' => fn($q) => $q->select('id', 'reservation_id', 'check_in', 'check_out', 'city_id', 'meal_id', 'rate_id', 'company_id', 'hotel_id', 'rooms_count', 'option_date', 'price', 'pax_count', 'status')->with([
-				'city:id,name',
-				'meal:id,meal_type',
-				'rate:id,name',
-				'company:id,name',
-				'hotel:id,name',
-			]),
-			'airport:id,reservation_id,airport_name',
-			'car:id,reservation_id,airline',
-		]);
-
-		if (isset($status)) {
-			$query->whereHas('reservation', fn($q) => $q->where('status', $status));
-		}
-
-		if ($check_in && $check_out) {
-			$query->whereHas(
-				'reservation',
-				fn($q) =>
-				$q->whereBetween('check_in', [$check_in, $check_out])
-					->orWhereBetween('check_out', [$check_in, $check_out])
-			);
-		} elseif ($check_in) {
-			$query->whereHas('reservation', fn($q) => $q->whereDate('check_in', '>=', $check_in));
-		} elseif ($check_out) {
-			$query->whereHas('reservation', fn($q) => $q->whereDate('check_out', '<=', $check_out));
-		}
-
-		$reservations = $query->orderBy('id', 'desc')->paginate();
-
-		return send_response('Reservations retrieved successfully', 200, $reservations);
-	}
-
-	public function option_date_data(Request $request)
-	{
-
 		$option_date_from = $request->query('option_date_from');
 		$option_date_to = $request->query('option_date_to');
 
-		$query = Reservation::with([
-			'client:id,name',
-			'agent:id,name',
-			'reservation' => fn($q) => $q->select('id', 'reservation_id', 'check_in', 'check_out', 'city_id', 'meal_id', 'rate_id', 'company_id', 'hotel_id', 'rooms_count', 'option_date', 'price', 'pax_count', 'status')->with([
-				'city:id,name',
-				'meal:id,meal_type',
-				'rate:id,name',
-				'company:id,name',
-				'hotel:id,name',
-			]),
-			'airport:id,reservation_id,airport_name',
-			'car:id,reservation_id,airline',
+		$hotel = $request->query('hotel');
+		$city = $request->query('city');
+		$agent = $request->query('agent');
+		$client = $request->query('client');
+
+		$query = HotelReservation::with([
+			'city:id,name',
+			'meal:id,meal_type',
+			'rate:id,name',
+			'company:id,name',
+			'hotel:id,name',
+			'reservation' => function ($q) {
+				$q->with('client:id,name', 'agent:id,name');
+			}
 		]);
 
-		if ($option_date_from && $option_date_to) {
+		if ($request->has('status')) {
+			$query->whereHas('reservation', function ($q) use ($status) {
+				$q->where('status', $status);
+			});
+		}
+
+		if ($request->has('hotel')) {
+			$query->whereHas('reservation', function ($q) use ($hotel) {
+				$q->where('hotel_id', $hotel);
+			});
+		}
+
+		if ($request->has('city')) {
+			$query->whereHas('reservation', function ($q) use ($city) {
+				$q->where('city_id', $city);
+			});
+		}
+
+		if ($request->has('client')) {
+			$query->whereHas('reservation', fn($q) => $q->where('client_id', $client));
+		}
+
+		if ($request->has('agent')) {
+			$query->whereHas('reservation', fn($q) => $q->where('agent_id', $agent));
+		}
+
+		if ($request->has('option_date_from') && $request->has('option_date_to')) {
 			$query->whereHas(
 				'reservation',
 				fn($q) =>
 				$q->whereBetween('option_date', [$option_date_from, $option_date_to])
 			);
+		} elseif ($option_date_from) {
+			$query->whereHas('reservation', fn($q) => $q->whereDate('option_date', '>=', $option_date_from));
+		} elseif ($option_date_to) {
+			$query->whereHas('reservation', fn($q) => $q->whereDate('option_date', '<=', $option_date_to));
 		}
-		$reservations = $query->orderBy('id', 'desc')->paginate();
-		return send_response('Reservations retrieved successfully', 200, $reservations);
-	}
 
-	public function filter_status(Request $request, string $status)
-	{
-
-		$check_in = $request->query('check_in');
-		$check_out = $request->query('check_out');
-
-		$query = Reservation::with([
-			'client:id,name',
-			'agent:id,name',
-			'reservation' => fn($q) => $q->select('id', 'reservation_id', 'check_in', 'check_out', 'city_id', 'meal_id', 'rate_id', 'company_id', 'hotel_id', 'rooms_count', 'option_date', 'price', 'pax_count', 'status')->with([
-				'city:id,name',
-				'meal:id,meal_type',
-				'rate:id,name',
-				'company:id,name',
-				'hotel:id,name',
-			]),
-			'airport:id,reservation_id,airport_name',
-			'car:id,reservation_id,airline',
-		]);
-
-		$query->whereHas('reservation', fn($q) => $q->where('status', $status));
-
-		if ($check_in && $check_out) {
+		if ($request->has('check_in') && $request->has('check_out')) {
 			$query->whereHas(
 				'reservation',
 				fn($q) =>
 				$q->whereBetween('check_in', [$check_in, $check_out])
 					->orWhereBetween('check_out', [$check_in, $check_out])
 			);
-		} elseif ($check_in) {
-			$query->whereHas('reservation', fn($q) => $q->whereDate('check_in', '>=', $check_in));
-		} elseif ($check_out) {
-			$query->whereHas('reservation', fn($q) => $q->whereDate('check_out', '<=', $check_out));
+		} elseif ($request->has('check_in')) {
+			$query->whereHas('reservation', fn($q) => $q->whereDate('check_in', '=', $check_in));
+		} elseif ($request->has('check_out')) {
+			$query->whereHas('reservation', fn($q) => $q->whereDate('check_out', '=', $check_out));
 		}
 
-		$reservations = $query->orderBy('id', 'desc')->paginate();
+		$reservations = $query->paginate();
 
 		return send_response('Reservations retrieved successfully', 200, $reservations);
 	}
@@ -149,7 +116,8 @@ class ReservationController extends Controller
 				'company:id,name',
 				'hotel:id,name',
 			]),
-
+			'airport',
+			'car'
 		])->find($id);
 		if (!$reservation) {
 			return send_response('Reservation not found', 404);

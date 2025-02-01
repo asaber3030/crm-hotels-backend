@@ -17,7 +17,7 @@ class ReservationFactory extends Factory
     return [
       'client_id' => \App\Models\Client::factory(), // Randomly assign an existing client
       'agent_id' => \App\Models\Agent::factory(), // Randomly assign an existing agent
-      'reservation_date' => $this->faker->dateTimeBetween('now', '+1 year')->format('Y-m-d'), // Random reservation date
+      'reservation_date' => $this->faker->dateTimeBetween('now', '+3 year')->format('Y-m-d'), // Random reservation date
       'notes' => $this->faker->sentence(), // Random notes
       'created_at' => now(),
       'updated_at' => now(),
