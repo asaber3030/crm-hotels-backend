@@ -57,6 +57,7 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('reservations', ReservationController::class);
 		Route::get('/reservations-trashed', [ReservationController::class, 'trashed']);
+		Route::post('/reservations/create', [ReservationController::class, 'createFullReservation']);
 		Route::get('/reservations/status/{status}', [ReservationController::class, 'filter_status']);
 		Route::get('/reservations-option-date', [ReservationController::class, 'option_date_data']);
 		Route::controller(ReservationController::class)->prefix('reservations')->group(function () {
