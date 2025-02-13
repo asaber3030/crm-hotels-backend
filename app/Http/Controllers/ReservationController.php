@@ -238,7 +238,7 @@ class ReservationController extends Controller
 			'airport_reservation.price' => 'nullable|required_with:airport_reservation|numeric|min:0',
 			'airport_reservation.flight_number' => 'nullable|required_with:airport_reservation|string|max:255',
 			'airport_reservation.coming_from' => 'nullable|required_with:airport_reservation|string|max:255',
-			'airport_reservation.passenger_count' => 'nullable|required_with:airport_reservation|string|max:255',
+			'airport_reservation.passenger_count' => 'nullable|required_with:airport_reservation|integer',
 			'airport_reservation.status' => 'nullable|required_with:airport_reservation|string|in:pending,done,cancelled',
 			'airport_reservation.arrival_date' => 'nullable|required_with:airport_reservation|date',
 			'airport_reservation.arrival_time' => 'nullable|required_with:airport_reservation|date_format:H:i:s',
