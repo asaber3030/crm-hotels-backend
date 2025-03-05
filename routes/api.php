@@ -18,6 +18,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\HotelReservationController;
 use App\Http\Controllers\PaymentTypeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Response;
 
 Route::as('api.')->prefix('v1/')->group(function () {
@@ -108,8 +109,14 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::get('/rates-trashed', [RateController::class, 'trashed']);
 		Route::patch('/rates/{id}/restore', [RateController::class, 'restore']);
 
+		Route::apiResource('vouchers', VoucherController::class);
+		Route::get('/vouchers-trashed', [VoucherController::class, 'trashed']);
+		Route::patch('/vouchers/{id}/restore', [VoucherController::class, 'restore']);
+
 		Route::apiResource('payment-types', PaymentTypeController::class);
 		Route::get('/payment-types-trashed', [PaymentTypeController::class, 'trashed']);
 		Route::patch('/payment-types/{id}/restore', [PaymentTypeController::class, 'restore']);
 	});
+
+	Route::get('/vouchers/{id}/pdf', [VoucherController::class, 'show_pdf']);
 });

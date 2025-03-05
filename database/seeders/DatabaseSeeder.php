@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\AirportReservation;
 use App\Models\CarReservation;
 use App\Models\City;
@@ -26,18 +25,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        AirportReservation::factory(50)->create();
-        CarReservation::factory(50)->create();
-        City::factory(50)->create();
-        Client::factory(50)->create();
-        Company::factory(50)->create();
-        Driver::factory(50)->create();
-        Hotel::factory(50)->create();
-        HotelReservation::factory(50)->create();
-        Meal::factory(50)->create();
-        Rate::factory(50)->create();
-        Reservation::factory(50)->create();
-        Room::factory(50)->create();
-        Agent::factory(50)->create();
+        AirportReservation::factory(500)->create();
+        CarReservation::factory(500)->create();
+        City::factory(500)->create();
+        Client::factory(500)->create();
+        Company::factory(500)->create();
+        Driver::factory(500)->create();
+        Hotel::factory(500)->create();
+        HotelReservation::factory(500)->create();
+        Meal::factory(500)->create();
+        Rate::factory(500)->create();
+        Reservation::factory(500)->create();
+        Room::factory(500)->create();
+        Agent::factory(500)->create();
     }
 }
