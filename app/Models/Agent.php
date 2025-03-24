@@ -15,5 +15,5 @@ class Agent extends Authenticatable
 	protected $table = 'agents';
 	protected $fillable = ['name', 'email', 'password', 'contact_number', 'address', 'role', 'state'];
 
-	protected $hidden = ['password', 'deleted_at'];
+	protected $hidden = ['password'];
 }

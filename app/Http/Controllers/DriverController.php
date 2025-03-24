@@ -7,10 +7,26 @@ use App\Models\Driver;
 
 class DriverController extends Controller
 {
-	public function index()
+	public function index(Request $request)
 	{
-		$drivers = Driver::orderBy('id', 'desc')->paginate();
-		return send_response('Drivers retrieved successfully', 200, $drivers);
+		$search = $request->query('search');
+		$drivers = Driver::query();
+		if ($search) {
+			$drivers->where('name', 'like', "%$search%");
+		}
+		$data = $drivers->orderBy('id', 'desc')->paginate();
+		return send_response('Drivers retrieved successfully', 200, $data);
+	}
+
+	public function all(Request $request)
+	{
+		$search = $request->query('search');
+		$drivers = Driver::query();
+		if ($search) {
+			$drivers->where('name', 'like', "%$search%");
+		}
+		$data = $drivers->orderBy('id', 'asc')->take(20)->get();
+		return send_response('Drivers retrieved successfully', 200, $data);
 	}
 
 	public function store(Request $request)

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\CarReservation;
 use App\Models\HotelReservation;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
 use App\Models\AirportReservation;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\CreateReservationRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
@@ -92,57 +95,52 @@ class ReservationController extends Controller
 		return send_response('Reservations retrieved successfully', 200, $reservations);
 	}
 
-	public function store(Request $request)
+	public function small(Request $request)
 	{
-		$request->validate([
-			'client_id' => 'required|integer|exists:clients,id',
-			'agent_id' => 'required|integer|exists:agents,id',
-			'reservation_date' => 'required|date',
-			'notes' => 'nullable|string|max:500',
-		]);
+		$reservations = HotelReservation::query();
+		$take = $request->query('take') ?? 6;
 
-		$reservation = Reservation::create($request->only(['client_id', 'agent_id', 'reservation_date', 'notes']));
-		return send_response('Reservation created successfully', 201, $reservation);
+		if ($request->query('status')) {
+			$reservations->where('status', $request->query('status'));
+		}
+
+		$data = $reservations
+			->select('id', 'check_in', 'check_out', 'reservation_id')
+			->with([
+				'reservation' => function ($q) {
+					$q
+						->select('id', 'client_id', 'agent_id')
+						->with(['client:id,name', 'agent:id,name']);
+				},
+			])
+			->orderBy('id', 'desc')
+			->take($take)
+			->get();
+		return send_response('Reservations retrieved successfully', 200, $data);
 	}
 
 	public function show($id)
 	{
 		$reservation = Reservation::with([
-			'client:id,name',
-			'agent:id,name',
-			'reservation' => fn($q) => $q->select('id', 'reservation_id', 'check_in', 'check_out', 'city_id', 'meal_id', 'rate_id', 'company_id', 'hotel_id', 'rooms_count', 'option_date', 'price', 'pax_count', 'status')->with([
-				'city:id,name',
-				'meal:id,meal_type',
-				'rate:id,name',
-				'company:id,name',
-				'hotel:id,name',
+			'client',
+			'agent',
+			'hotel' => fn($q) => $q->with([
+				'city',
+				'meal',
+				'rate',
+				'room',
+				'payment_type',
+				'company',
+				'hotel',
+				'reservation'
 			]),
 			'airport',
-			'car'
+			'car' => fn($q) => $q->with('driver')
 		])->find($id);
 		if (!$reservation) {
 			return send_response('Reservation not found', 404);
 		}
 		return send_response('Reservation retrieved successfully', 200, $reservation);
-	}
-
-	public function update(Request $request, $id)
-	{
-		$reservation = Reservation::find($id);
-
-		if (!$reservation) {
-			return send_response('Reservation not found', 404);
-		}
-
-		$request->validate([
-			'client_id' => 'sometimes|integer|exists:clients,id',
-			'agent_id' => 'sometimes|integer|exists:agents,id',
-			'reservation_date' => 'sometimes|date',
-			'notes' => 'nullable|string|max:500',
-		]);
-
-		$reservation->update($request->only(['client_id', 'agent_id', 'reservation_date', 'notes']));
-		return send_response('Reservation updated successfully', 200, $reservation);
 	}
 
 	public function destroy($id)
@@ -193,130 +191,217 @@ class ReservationController extends Controller
 		return send_response('Airport reservations retrieved successfully', 200, $airportReservations);
 	}
 
-	public function createFullReservation(Request $request)
+	public function store(CreateReservationRequest $request)
 	{
-		$request->validate([
-			'client_id' => 'required|exists:clients,id',
-			'agent_id' => 'required|exists:agents,id',
-			'reservation_date' => 'required|date',
-			'notes' => 'nullable|max:255',
 
-			// Hotel Reservation (Optional)
-			'hotel_reservation' => 'nullable|array',
-			'hotel_reservation.hotel_id' => 'nullable|required_with:hotel_reservation|exists:hotels,id',
-			'hotel_reservation.city_id' => 'nullable|required_with:hotel_reservation|exists:cities,id',
-			'hotel_reservation.meal_id' => 'nullable|required_with:hotel_reservation|exists:meals,id',
-			'hotel_reservation.company_id' => 'nullable|required_with:hotel_reservation|exists:companies,id',
-			'hotel_reservation.rate_id' => 'nullable|required_with:hotel_reservation|exists:rates,id',
-			'hotel_reservation.check_in' => 'nullable|required_with:hotel_reservation|date',
-			'hotel_reservation.check_out' => 'nullable|required_with:hotel_reservation|date|after:hotel_reservation.check_in',
-			'hotel_reservation.rooms_count' => 'nullable|required_with:hotel_reservation|integer|min:1',
-			'hotel_reservation.view' => 'nullable|required_with:hotel_reservation|string|max:255',
-			'hotel_reservation.pax_count' => 'nullable|required_with:hotel_reservation|integer|min:1',
-			'hotel_reservation.adults' => 'nullable|required_with:hotel_reservation|integer|min:1',
-			'hotel_reservation.status' => 'nullable|required_with:hotel_reservation|string|in:new,in_revision,confirmed,refunded,cancelled,guaranteed',
-			'hotel_reservation.children' => 'nullable|required_with:hotel_reservation|integer|min:0',
-			'hotel_reservation.option_date' => 'nullable|required_with:hotel_reservation|date',
-			'hotel_reservation.confirmation_number' => 'nullable|required_with:hotel_reservation|string|max:255',
-			'hotel_reservation.price' => 'nullable|required_with:hotel_reservation|numeric|min:0',
-
-			'car_reservation' => 'nullable|array',
-			'car_reservation.driver_id' => 'nullable|required_with:car_reservation|exists:drivers,id',
-			'car_reservation.airline' => 'nullable|required_with:car_reservation|string|max:255',
-			'car_reservation.meeting_point' => 'nullable|required_with:car_reservation|string|max:255',
-			'car_reservation.arrival_date' => 'nullable|required_with:car_reservation|date',
-			'car_reservation.arrival_time' => 'nullable|required_with:car_reservation|string|max:255',
-			'car_reservation.coming_from' => 'nullable|required_with:car_reservation|string|max:255',
-			'car_reservation.status' => 'nullable|required_with:car_reservation|string|in:pending,done,cancelled',
-			'car_reservation.comments' => 'nullable|string|max:255',
-			'car_reservation.price' => 'nullable|required_with:car_reservation|numeric|min:0',
-
-			'airport_reservation' => 'nullable|array',
-			'airport_reservation.airport_name' => 'nullable|required_with:airport_reservation|string|max:255',
-			'airport_reservation.airline' => 'nullable|required_with:airport_reservation|string|max:255',
-			'airport_reservation.runner' => 'nullable|required_with:airport_reservation|string|max:255',
-			'airport_reservation.price' => 'nullable|required_with:airport_reservation|numeric|min:0',
-			'airport_reservation.flight_number' => 'nullable|required_with:airport_reservation|string|max:255',
-			'airport_reservation.coming_from' => 'nullable|required_with:airport_reservation|string|max:255',
-			'airport_reservation.passenger_count' => 'nullable|required_with:airport_reservation|integer',
-			'airport_reservation.status' => 'nullable|required_with:airport_reservation|string|in:pending,done,cancelled',
-			'airport_reservation.arrival_date' => 'nullable|required_with:airport_reservation|date',
-			'airport_reservation.arrival_time' => 'nullable|required_with:airport_reservation|date_format:H:i:s',
-			'airport_reservation.persons_count' => 'nullable|required_with:airport_reservation|integer',
-			'airport_reservation.statment' => 'nullable|required_with:airport_reservation|integer',
-		]);
+		DB::beginTransaction();
 
 		try {
+
+			$client = $request->input('client.client_id');
+
 			$reservation = Reservation::create([
-				'agent_id' => $request->input('agent_id'),
-				'client_id' => $request->input('client_id'),
-				'reservation_date' => $request->input('reservation_date'),
-				'notes' => $request->input('notes'),
+				'client_id' => $client,
+				'agent_id' => Auth::id(),
+				'reservation_date' => now(),
+				'notes' => $request->input('hotel.notes', null),
 			]);
 
-			if ($request->has('hotel_reservation')) {
-				HotelReservation::create([
-					'reservation_id' => $reservation->id,
-					'hotel_id' => $request->input('hotel_reservation.hotel_id'),
-					'city_id' => $request->input('hotel_reservation.city_id'),
-					'meal_id' => $request->input('hotel_reservation.meal_id'),
-					'company_id' => $request->input('hotel_reservation.company_id'),
-					'rate_id' => $request->input('hotel_reservation.rate_id'),
-					'check_in' => $request->input('hotel_reservation.check_in'),
-					'check_out' => $request->input('hotel_reservation.check_out'),
-					'rooms_count' => $request->input('hotel_reservation.rooms_count'),
-					'view' => $request->input('hotel_reservation.view'),
-					'pax_count' => $request->input('hotel_reservation.pax_count'),
-					'adults' => $request->input('hotel_reservation.adults'),
-					'status' => $request->input('hotel_reservation.status'),
-					'children' => $request->input('hotel_reservation.children'),
-					'option_date' => $request->input('hotel_reservation.option_date'),
-					'confirmation_number' => $request->input('hotel_reservation.confirmation_number'),
-					'price' => $request->input('hotel_reservation.price'),
-				]);
+
+			if ($request->has('hotel')) {
+				$hotelData = $request->input('hotel');
+				$hotelData['reservation_id'] = $reservation->id;
+				HotelReservation::create($hotelData);
 			}
 
-			// Create car reservation if provided
-			if ($request->has('car_reservation')) {
-				CarReservation::create([
-					'reservation_id' => $reservation->id,
-					'driver_id' => $request->input('car_reservation.driver_id'),
-					'airline' => $request->input('car_reservation.airline'),
-					'meeting_point' => $request->input('car_reservation.meeting_point'),
-					'arrival_date' => $request->input('car_reservation.arrival_date'),
-					'arrival_time' => $request->input('car_reservation.arrival_time'),
-					'coming_from' => $request->input('car_reservation.coming_from'),
-					'status' => $request->input('car_reservation.status'),
-					'comments' => $request->input('car_reservation.comments'),
-					'price' => $request->input('car_reservation.price'),
-				]);
+			if ($request->has('car')) {
+				$carData = $request->input('car');
+				$carData['reservation_id'] = $reservation->id;
+				CarReservation::create($carData);
 			}
 
-			// Create airport reservation if provided
-			if ($request->has('airport_reservation')) {
-				AirportReservation::create([
-					'reservation_id' => $reservation->id,
-					'airport_name' => $request->input('airport_reservation.airport_name'),
-					'airline' => $request->input('airport_reservation.airline'),
-					'runner' => $request->input('airport_reservation.runner'),
-					'price' => $request->input('airport_reservation.price'),
-					'flight_number' => $request->input('airport_reservation.flight_number'),
-					'coming_from' => $request->input('airport_reservation.coming_from'),
-					'passenger_count' => $request->input('airport_reservation.passenger_count'),
-					'status' => $request->input('airport_reservation.status'),
-					'arrival_date' => $request->input('airport_reservation.arrival_date'),
-					'arrival_time' => $request->input('airport_reservation.arrival_time'),
-					'persons_count' => $request->input('airport_reservation.persons_count'),
-					'statment' => $request->input('airport_reservation.statment'),
-				]);
+			if ($request->has('airport')) {
+				$airportData = $request->input('airport');
+				$airportData['reservation_id'] = $reservation->id;
+				AirportReservation::create($airportData);
 			}
 
 			DB::commit();
 
-			return send_response('Reservation Create', 201);
+			return send_response(
+				'Reservation created successfully',
+				201,
+				$reservation->load(['client', 'car', 'reservation', 'airport'])
+			);
 		} catch (\Exception $e) {
 			DB::rollBack();
-			return send_response('Something went wrong.', 500);
+			return send_response('Failed to create reservation', 500, ['errors' => $e->getMessage()]);
+		}
+	}
+
+	public function storeWithNewClient(CreateReservationRequest $request)
+	{
+
+		DB::beginTransaction();
+
+		try {
+
+			$client = Client::create(
+				[
+					'email' => $request->input('client.email'),
+					'name' => $request->input('client.name'),
+					'phone' => $request->input('client.phone'),
+					'nationality' => $request->input('client.nationality'),
+				]
+			);
+
+			$reservation = Reservation::create([
+				'client_id' => $client->id,
+				'agent_id' => Auth::id(),
+				'reservation_date' => now(),
+				'notes' => $request->input('hotel.notes', null),
+			]);
+
+
+			if ($request->has('hotel')) {
+				$hotelData = $request->input('hotel');
+				$hotelData['reservation_id'] = $reservation->id;
+				HotelReservation::create($hotelData);
+			}
+
+			if ($request->has('car')) {
+				$carData = $request->input('car');
+				$carData['reservation_id'] = $reservation->id;
+				CarReservation::create($carData);
+			}
+
+			if ($request->has('airport')) {
+				$airportData = $request->input('airport');
+				$airportData['reservation_id'] = $reservation->id;
+				AirportReservation::create($airportData);
+			}
+
+			DB::commit();
+
+			return send_response(
+				'Reservation created successfully',
+				201,
+				$reservation->load(['client', 'car', 'reservation', 'airport'])
+			);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return send_response('Failed to create reservation', 500, ['error' => $e->getMessage()]);
+		}
+	}
+
+	public function update(CreateReservationRequest $request, $id)
+	{
+
+		DB::beginTransaction();
+
+		try {
+
+			$client = $request->input('client.client_id');
+
+			$reservation = Reservation::find($id);
+			$reservation->update([
+				'client_id' => $client,
+			]);
+
+			if ($request->has('hotel')) {
+				$hotelData = $request->input('hotel');
+				$hotelData['reservation_id'] = $reservation->id;
+				HotelReservation::updateOrCreate([
+					'reservation_id' => $reservation->id
+				], $hotelData);
+			}
+
+			if ($request->filled('car')) {
+				$carData = $request->input('car');
+				$carData['reservation_id'] = $reservation->id;
+				CarReservation::updateOrCreate(
+					['reservation_id' => $reservation->id],
+					$carData
+				);
+			} else {
+				CarReservation::where('reservation_id', $reservation->id)->delete();
+			}
+
+			if ($request->filled('airport')) {
+				$airportData = $request->input('airport');
+				$airportData['reservation_id'] = $reservation->id;
+				AirportReservation::updateOrCreate(
+					['reservation_id' => $reservation->id],
+					$airportData
+				);
+			} else {
+				AirportReservation::where('reservation_id', $reservation->id)->delete();
+			}
+
+			DB::commit();
+
+			return send_response('Reservation Updated successfully', 201, $reservation);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return send_response('Failed to update reservation', 500, ['errors' => $e->getMessage()]);
+		}
+	}
+
+	public function updateWithNewClient(CreateReservationRequest $request, $id)
+	{
+
+		DB::beginTransaction();
+
+		try {
+
+			$client = Client::create([
+				'email' => $request->input('client.email'),
+				'name' => $request->input('client.name'),
+				'phone' => $request->input('client.phone'),
+				'nationality' => $request->input('client.nationality'),
+			]);
+
+			$reservation = Reservation::where('id', $id)->update([
+				'client_id' => $client->id
+			]);
+
+			if ($request->has('hotel')) {
+				$hotelData = $request->input('hotel');
+				$hotelData['reservation_id'] = $id;
+				HotelReservation::updateOrCreate([
+					'reservation_id' => $id
+				], $hotelData);
+			}
+
+
+			if ($request->filled('car')) {
+				$carData = $request->input('car');
+				$carData['reservation_id'] = $id;
+				CarReservation::updateOrCreate(
+					['reservation_id' => $id],
+					$carData
+				);
+			} else {
+				CarReservation::where('reservation_id', $id)->delete();
+			}
+
+			if ($request->filled('airport')) {
+				$airportData = $request->input('airport');
+				$airportData['reservation_id'] = $id;
+				AirportReservation::updateOrCreate(
+					['reservation_id' => $id],
+					$airportData
+				);
+			} else {
+				AirportReservation::where('reservation_id', $id)->delete();
+			}
+
+			DB::commit();
+
+			return send_response('Reservation update successfully', 201);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return send_response('Failed to update reservation', 500, ['error' => $e->getMessage()]);
 		}
 	}
 }

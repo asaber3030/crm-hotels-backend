@@ -7,10 +7,27 @@ use Illuminate\Http\Request;
 
 class RateController extends Controller
 {
-  public function index()
+  public function index(Request $request)
   {
-    $rates = Rate::paginate();
-    return send_response('Rates retrieved successfully', 200, $rates);
+    $search = $request->query('search');
+    $rates = Rate::query();
+    if ($search) {
+      $rates->where('name', 'like', "%$search%");
+    }
+    $data = $rates->orderBy('id', 'desc')->paginate();
+    return send_response('Rates retrieved successfully', 200, $data);
+  }
+
+
+  public function all(Request $request)
+  {
+    $search = $request->query('search');
+    $rates = Rate::query();
+    if ($search) {
+      $rates->where('name', 'like', "%$search%");
+    }
+    $data = $rates->orderBy('id', 'desc')->take(20)->get();
+    return send_response('Rates retrieved successfully', 200, $data);
   }
 
   public function store(Request $request)

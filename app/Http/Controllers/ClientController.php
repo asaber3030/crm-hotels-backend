@@ -7,10 +7,30 @@ use App\Models\Client;
 
 class ClientController extends Controller
 {
-	public function index()
+	public function index(Request $request)
 	{
-		$clients = Client::orderBy('id', 'desc')->paginate();
-		return send_response('Clients retrieved successfully', 200, $clients);
+		$search = $request->query('search');
+		$clients = Client::query();
+		if ($search) {
+			$clients->where('name', 'like', "%$search%")
+				->orWhere('email', 'like', "%$search%")
+				->orWhere('phone', 'like', "%$search%");
+		}
+		$data = $clients->orderBy('id', 'desc')->paginate();
+		return send_response('Clients retrieved successfully', 200, $data);
+	}
+
+	public function all(Request $request)
+	{
+		$search = $request->query('search');
+		$clients = Client::query();
+		if ($search) {
+			$clients->where('name', 'like', "%$search%")
+				->orWhere('email', 'like', "%$search%")
+				->orWhere('phone', 'like', "%$search%");
+		}
+		$data = $clients->orderBy('id', 'desc')->take(20)->get();
+		return send_response('Clients retrieved successfully', 200, $data);
 	}
 
 	public function store(Request $request)
@@ -76,7 +96,7 @@ class ClientController extends Controller
 
 	public function restore($id)
 	{
-		$client = Client::onlyTrashed()->find($id);
+		$client = Client::withTrashed()->find($id);
 		if (!$client) {
 			return send_response('Deleted client not found', 404);
 		}

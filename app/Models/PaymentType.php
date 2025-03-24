@@ -15,5 +15,4 @@ class PaymentType extends Model
 		'name',
 		'state'
 	];
-	protected $hidden = ['deleted_at'];
 }

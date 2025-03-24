@@ -7,11 +7,51 @@ use App\Models\HotelReservation;
 
 class HotelReservationController extends Controller
 {
-	public function index()
+	public function index(Request $request)
 	{
-		$hotelReservations = HotelReservation::with(['rate', 'hotel', 'meal', 'city', 'company', 'reservation'])->orderBy('id', 'desc')->paginate();
+		$query = HotelReservation::with([
+			'rate',
+			'hotel',
+			'meal',
+			'city',
+			'company',
+			'room',
+			'reservation' => fn($query) => $query->with('client')
+		]);
+
+		if ($request->filled('status')) {
+			$query->where('status', $request->status);
+		}
+
+		if ($request->filled('check_in')) {
+			$query->whereDate('check_in', $request->check_in);
+		}
+
+		if ($request->filled('check_out')) {
+			$query->whereDate('check_out', $request->check_out);
+		}
+
+		if ($request->filled('option_date_from')) {
+			$query->whereDate('option_date', '>=', $request->option_date_from);
+		}
+
+		if ($request->filled('option_date_to')) {
+			$query->whereDate('option_date', '<=', $request->option_date_to);
+		}
+
+		if ($request->filled('company_id')) {
+			$query->where('company_id', $request->company_id);
+		}
+
+		if ($request->filled('hotel_id')) {
+			$query->where('hotel_id', $request->hotel_id);
+		}
+
+		$hotelReservations = $query->orderBy('id', 'desc')->paginate();
+
 		return send_response('Hotel reservations retrieved successfully', 200, $hotelReservations);
 	}
+
 
 	public function store(Request $request)
 	{
@@ -61,7 +101,7 @@ class HotelReservationController extends Controller
 	{
 		$hotelReservation = HotelReservation::with([
 			'hotel',
-			'reservation',
+			'reservation' => fn($query) => $query->with('client'),
 			'meal',
 			'company',
 			'city',

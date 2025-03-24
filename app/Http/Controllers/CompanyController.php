@@ -7,10 +7,26 @@ use App\Models\Company;
 
 class CompanyController extends Controller
 {
-  public function index()
+  public function index(Request $request)
   {
-    $companies = Company::orderBy('id', 'desc')->paginate();
-    return send_response('Companies retrieved successfully', 200, $companies);
+    $search = $request->query('search');
+    $companies = Company::query();
+    if ($search) {
+      $companies->where('name', 'like', "%$search%");
+    }
+    $data = $companies->orderBy('id', 'desc')->paginate();
+    return send_response('Companies retrieved successfully', 200, $data);
+  }
+
+  public function all(Request $request)
+  {
+    $search = $request->query('search');
+    $companies = Company::query();
+    if ($search) {
+      $companies->where('name', 'like', "%$search%");
+    }
+    $data = $companies->orderBy('id', 'desc')->take(200)->get();
+    return send_response('Companies retrieved successfully', 200, $data);
   }
 
   public function store(Request $request)

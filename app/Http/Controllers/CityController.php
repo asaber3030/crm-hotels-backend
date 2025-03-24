@@ -9,9 +9,33 @@ use Illuminate\Http\Request;
 class CityController extends Controller
 {
 
-	public function index()
+	public function index(Request $request)
 	{
-		$cities = City::orderBy('id', 'desc')->get();
+		$search = $request->query('search');
+		$cities = City::query();
+		if ($search) {
+			$cities->where('name', 'like', "%$search%")
+				->orWhere('email', 'like', "%$search%")
+				->orWhere('phone', 'like', "%$search%");
+		}
+		$data = $cities->orderBy('id', 'desc')->paginate();
+		return send_response('Cities retrieved successfully', 200, $data);
+	}
+
+	public function all(Request $request)
+	{
+		$search = $request->query('search');
+		$state = $request->query('state');
+		$take = $request->query('take');
+
+		$cities = City::query();
+		if ($search) {
+			$cities->where('name', 'like', "%$search%");
+		}
+		if ($state) {
+			$cities->where('state', "$state");
+		}
+		$cities = $cities->orderBy('id', 'desc')->take($take ?? 20)->get();
 		return send_response('Cities retrieved successfully', 200, $cities);
 	}
 
@@ -72,9 +96,16 @@ class CityController extends Controller
 		return send_response('City restored successfully', 200, $city);
 	}
 
-	public function trashed()
+	public function trashed(Request $request)
 	{
-		$citys = City::onlyTrashed()->with('city')->get();
-		return send_response('Trashed Citys retrieved successfully', 200, $citys);
+		$cities = City::query()->onlyTrashed();
+		$search = $request->query('search');
+
+		if ($search) {
+			$cities->where('name', 'like', "%$search%");
+		}
+
+		$data = $cities->paginate();
+		return send_response('Trashed Citys retrieved successfully', 200, $data);
 	}
 }

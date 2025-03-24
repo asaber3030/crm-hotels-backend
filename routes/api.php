@@ -45,10 +45,13 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('cities', CityController::class);
 		Route::get('/cities-trashed', [CityController::class, 'trashed']);
+		Route::get('/cities-all', [CityController::class, 'all']);
 		Route::patch('/cities/{id}/restore', [CityController::class, 'restore']);
 
 		Route::apiResource('hotels', HotelController::class);
 		Route::get('/hotels-trashed', [HotelController::class, 'trashed']);
+		Route::get('/hotels-all', [HotelController::class, 'all']);
+		Route::get('/hotels/filter/{city}', [HotelController::class, 'filter_by_city']);
 		Route::get('/hotels/{id}/rooms', [HotelController::class, 'hotelRooms']);
 		Route::patch('/hotels/{id}/restore', [HotelController::class, 'restore']);
 
@@ -57,8 +60,10 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::patch('/agents/{id}/restore', [AgentController::class, 'restore']);
 
 		Route::apiResource('reservations', ReservationController::class);
-		Route::get('/reservations-trashed', [ReservationController::class, 'trashed']);
+		Route::get('/reservations-small', [ReservationController::class, 'small']);
 		Route::post('/reservations/create', [ReservationController::class, 'createFullReservation']);
+		Route::post('/reservations/create-with-new-client', [ReservationController::class, 'storeWithNewClient']);
+		Route::patch('/reservations/{id}/update-with-new-client', [ReservationController::class, 'updateWithNewClient']);
 		Route::get('/reservations/status/{status}', [ReservationController::class, 'filter_status']);
 		Route::get('/reservations-option-date', [ReservationController::class, 'option_date_data']);
 		Route::controller(ReservationController::class)->prefix('reservations')->group(function () {
@@ -69,6 +74,7 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('clients', ClientController::class);
 		Route::get('/clients-trashed', [ClientController::class, 'trashed']);
+		Route::get('/clients-all', [ClientController::class, 'all']);
 		Route::patch('/clients/{id}/restore', [ClientController::class, 'restore']);
 
 		Route::apiResource('users', UserController::class);
@@ -77,23 +83,29 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('drivers', DriverController::class);
 		Route::get('/drivers-trashed', [DriverController::class, 'trashed']);
+		Route::get('/drivers-all', [DriverController::class, 'all']);
 		Route::patch('/drivers/{id}/restore', [DriverController::class, 'restore']);
 
 		Route::apiResource('companies', CompanyController::class);
 		Route::get('/companies-trashed', [CompanyController::class, 'trashed']);
+		Route::get('/companies-all', [CompanyController::class, 'all']);
 		Route::patch('/companies/{id}/restore', [CompanyController::class, 'restore']);
 
 		Route::apiResource('rooms', RoomController::class);
 		Route::get('/rooms-trashed', [RoomController::class, 'trashed']);
+		Route::get('/rooms-all', [RoomController::class, 'all']);
 		Route::patch('/rooms/{id}/restore', [RoomController::class, 'restore']);
 
 		Route::apiResource('airport-reservations', AirportReservationController::class);
 		Route::get('/airport-reservations-trashed', [AirportReservationController::class, 'trashed']);
 		Route::patch('/airport-reservations/{id}/restore', [AirportReservationController::class, 'restore']);
+		Route::patch('/airport-reservations/{id}/status', [AirportReservationController::class, 'change_status']);
+		Route::patch('/airport-reservations/{id}/update-with-new-client', [AirportReservationController::class, 'updateWithNewClient']);
 
 		Route::apiResource('car-reservations', CarReservationController::class);
 		Route::get('/car-reservations-trashed', [CarReservationController::class, 'trashed']);
 		Route::patch('/car-reservations/{id}/restore', [CarReservationController::class, 'restore']);
+		Route::patch('/car-reservations/{id}/status', [CarReservationController::class, 'change_status']);
 
 		Route::apiResource('hotel-reservations', HotelReservationController::class);
 		Route::get('/hotel-reservations-trashed', [HotelReservationController::class, 'trashed']);
@@ -103,10 +115,12 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('meals', MealController::class);
 		Route::get('/meals-trashed', [MealController::class, 'trashed']);
+		Route::get('/meals-all', [MealController::class, 'all']);
 		Route::patch('/meals/{id}/restore', [MealController::class, 'restore']);
 
 		Route::apiResource('rates', RateController::class);
 		Route::get('/rates-trashed', [RateController::class, 'trashed']);
+		Route::get('/rates-all', [RateController::class, 'all']);
 		Route::patch('/rates/{id}/restore', [RateController::class, 'restore']);
 
 		Route::apiResource('vouchers', VoucherController::class);
@@ -115,6 +129,7 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('payment-types', PaymentTypeController::class);
 		Route::get('/payment-types-trashed', [PaymentTypeController::class, 'trashed']);
+		Route::get('/payment-types-all', [PaymentTypeController::class, 'all']);
 		Route::patch('/payment-types/{id}/restore', [PaymentTypeController::class, 'restore']);
 	});
 

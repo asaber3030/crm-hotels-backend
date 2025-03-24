@@ -13,14 +13,17 @@ class HotelReservation extends Model
 
 	protected $fillable = [
 		'reservation_id',
+		'room_id',
 		'hotel_id',
 		'city_id',
 		'meal_id',
 		'company_id',
 		'rate_id',
+		'payment_type_id',
 		'check_in',
 		'check_out',
 		'rooms_count',
+		'status',
 		'view',
 		'pax_count',
 		'adults',
@@ -29,12 +32,16 @@ class HotelReservation extends Model
 		'confirmation_number',
 		'price'
 	];
-	protected $hidden = ['deleted_at'];
 
 
 	public function hotel()
 	{
 		return $this->belongsTo(Hotel::class, 'hotel_id', 'id');
+	}
+
+	public function room()
+	{
+		return $this->belongsTo(Room::class, 'room_id', 'id');
 	}
 
 	public function reservation()
@@ -60,5 +67,10 @@ class HotelReservation extends Model
 	public function rate()
 	{
 		return $this->belongsTo(Rate::class, 'rate_id', 'id');
+	}
+
+	public function payment_type()
+	{
+		return $this->belongsTo(Rate::class, 'payment_type_id', 'id');
 	}
 }

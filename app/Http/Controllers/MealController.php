@@ -7,9 +7,34 @@ use App\Models\Meal;
 
 class MealController extends Controller
 {
-	public function index()
+	public function index(Request $request)
 	{
-		$meals = Meal::orderBy('id', 'desc')->paginate();
+		$search = $request->query('search');
+		$meals = Meal::query();
+
+		if ($search) {
+			$meals->where('meal_type', 'like', "%$search%");
+		}
+
+		$data = $meals->orderBy('id', 'desc')->paginate();
+		return send_response('Meals retrieved successfully', 200, $data);
+	}
+
+
+	public function all(Request $request)
+	{
+		$search = $request->query('search');
+		$state = $request->query('state');
+		$take = $request->query('take');
+
+		$meals = Meal::query();
+		if ($search) {
+			$meals->where('meal_type', 'like', "%$search%");
+		}
+		if ($state) {
+			$meals->where('state', "$state");
+		}
+		$meals = $meals->orderBy('id', 'desc')->take($take ?? 20)->get();
 		return send_response('Meals retrieved successfully', 200, $meals);
 	}
 

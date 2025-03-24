@@ -13,5 +13,4 @@ class City extends Model
   public $timestamps = false;
   protected $table = 'cities';
   protected $fillable = ['name', 'state'];
-  protected $hidden = ['deleted_at'];
 }

@@ -7,10 +7,27 @@ use App\Models\Room;
 
 class RoomController extends Controller
 {
-	public function index()
+	public function index(Request $request)
 	{
-		$rooms = Room::orderBy('id', 'desc')->with('hotel')->paginate();
-		return send_response('Rooms retrieved successfully', 200, $rooms);
+		$rooms = Room::query();
+		if ($request->query('search')) {
+			$rooms->where('room_type', 'like', "%{$request->query('search')}%")
+				->whereHas('hotel', function ($query) use ($request) {
+					$query->where('name', 'like', "%{$request->query('search')}%");
+				});
+		}
+		$data = $rooms->orderBy('id', 'desc')->with('hotel')->paginate();
+		return send_response('Rooms retrieved successfully', 200, $data);
+	}
+
+	public function all(Request $request)
+	{
+		$rooms = Room::query();
+		if ($request->query('search')) {
+			$rooms->where('room_type', 'like', "%{$request->query('search')}%");
+		}
+		$data = $rooms->orderBy('id', 'desc')->take(20)->get();
+		return send_response('Rooms retrieved successfully', 200, $data);
 	}
 
 	public function store(Request $request)
@@ -51,8 +68,8 @@ class RoomController extends Controller
 		]);
 
 		$room->update($request->only([
-			'hotel_id' => 'required|exists:hotels,id',
-			'room_type' => 'required',
+			'hotel_id',
+			'room_type',
 		]));
 
 		return send_response('Room updated successfully', 200, $room);

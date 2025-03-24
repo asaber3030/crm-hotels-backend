@@ -15,5 +15,4 @@ class Driver extends Model
 		'name',
 		'phone',
 	];
-	protected $hidden = ['deleted_at'];
 }

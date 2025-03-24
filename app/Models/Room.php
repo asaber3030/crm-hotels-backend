@@ -13,7 +13,6 @@ class Room extends Model
 
 	protected $table = 'rooms';
 	protected $fillable = ['hotel_id', 'room_type'];
-	protected $hidden = ['deleted_at'];
 
 	public function hotel()
 	{

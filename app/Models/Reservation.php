@@ -18,7 +18,27 @@ class Reservation extends Model
 		'reservation_date',
 		'notes',
 	];
-	protected $hidden = ['deleted_at'];
+
+	protected $appends = [
+		'has_car',
+		'has_hotel',
+		'has_airport',
+	];
+
+	public function getHasCarAttribute()
+	{
+		return $this->car()->exists();
+	}
+
+	public function getHasHotelAttribute()
+	{
+		return $this->reservation()->exists();
+	}
+
+	public function getHasAirportAttribute()
+	{
+		return $this->airport()->exists();
+	}
 
 	public function client()
 	{
@@ -36,6 +56,11 @@ class Reservation extends Model
 	}
 
 	public function reservation()
+	{
+		return $this->hasOne(HotelReservation::class, 'reservation_id', 'id');
+	}
+
+	public function hotel()
 	{
 		return $this->hasOne(HotelReservation::class, 'reservation_id', 'id');
 	}

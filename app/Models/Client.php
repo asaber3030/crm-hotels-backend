@@ -18,5 +18,4 @@ class Client extends Model
 		'phone',
 		'nationality',
 	];
-	protected $hidden = ['deleted_at'];
 }

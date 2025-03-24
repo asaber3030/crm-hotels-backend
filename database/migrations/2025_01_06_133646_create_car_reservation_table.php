@@ -15,10 +15,11 @@ return new class extends Migration
 
         Schema::create('car_reservations', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('reservation_id')->unsigned();
+            $table->bigInteger('reservation_id')->nullable()->unsigned();
             $table->bigInteger('driver_id')->unsigned();
             $table->foreign('reservation_id')->references('id')->on('reservations');
             $table->foreign('driver_id')->references('id')->on('drivers');
+            $table->string('client_name')->nullable();
             $table->string('airline');
             $table->string('meeting_point');
             $table->date('arrival_date');

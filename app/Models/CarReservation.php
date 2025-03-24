@@ -18,11 +18,11 @@ class CarReservation extends Model
 		'meeting_point',
 		'arrival_date',
 		'arrival_time',
+		'status',
 		'coming_from',
 		'comments',
 		'price'
 	];
-	protected $hidden = ['deleted_at'];
 
 	public function driver()
 	{

@@ -15,5 +15,4 @@ class Company extends Model
 		'name',
 		'state',
 	];
-	protected $hidden = ['deleted_at'];
 }

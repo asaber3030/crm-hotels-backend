@@ -15,9 +15,10 @@ return new class extends Migration
 
         Schema::create('airport_reservations', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('reservation_id')->unsigned();
+            $table->bigInteger('reservation_id')->nullable()->unsigned();
             $table->foreign('reservation_id')->references('id')->on('reservations');
             $table->string('airport_name');
+            $table->string('client_name')->nullable();
             $table->string('airline');
             $table->string('runner');
             $table->integer('price');

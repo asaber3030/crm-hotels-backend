@@ -7,10 +7,30 @@ use Illuminate\Http\Request;
 
 class PaymentTypeController extends Controller
 {
-  public function index()
+  public function index(Request $request)
   {
-    $payments_types = PaymentType::paginate();
-    return send_response('Payments Types retrieved successfully', 200, $payments_types);
+    $search = $request->query('search');
+    $payments = PaymentType::query();
+
+    if ($search) {
+      $payments->where('name', 'like', '%' . $search . '%');
+    }
+
+    $data = $payments->orderBy('id', 'desc')->paginate();
+    return send_response('Payments Types retrieved successfully', 200, $data);
+  }
+
+  public function all(Request $request)
+  {
+    $search = $request->query('search');
+    $payments = PaymentType::query();
+
+    if ($search) {
+      $payments->where('name', 'like', '%' . $search . '%');
+    }
+
+    $data = $payments->orderBy('id', 'desc')->take(20)->get();
+    return send_response('Payments Types retrieved successfully', 200, $data);
   }
 
   public function store(Request $request)

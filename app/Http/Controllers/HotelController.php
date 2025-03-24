@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateReservationRequest;
 use Illuminate\Http\Request;
 use App\Models\Hotel;
 use App\Models\Room;
@@ -9,9 +10,47 @@ use App\Models\Room;
 class HotelController extends Controller
 {
 
-	public function index()
+	public function index(Request $request)
 	{
-		$hotels = Hotel::orderBy('id', 'desc')->with('city')->get();
+		$search = $request->query('search');
+		$hotels = Hotel::query();
+		if ($search) {
+			$hotels->where('name', 'like', "%$search%")
+				->orWhere('email', 'like', "%$search%")
+				->orWhere('phone_number', 'like', "%$search%");
+		}
+		$data = $hotels->orderBy('id', 'desc')->with('city')->paginate();
+		return send_response('Hotels retrieved successfully', 200, $data);
+	}
+
+	public function filter_by_city(Request $request, string $city)
+	{
+		$search = $request->query('search');
+		$take = $request->query('take');
+
+		$hotels = Hotel::query();
+		$hotels->where('city_id', $city);
+
+		if ($search) {
+			$hotels->where('name', 'like', "%$search%");
+		}
+
+		$hotels = $hotels->orderBy('id', 'desc')->take($take ?? 20)->get();
+		return send_response('Hotels retrieved successfully', 200, $hotels);
+	}
+
+	public function all(Request $request)
+	{
+		$search = $request->query('search');
+		$take = $request->query('take');
+
+		$hotels = Hotel::query();
+
+		if ($search) {
+			$hotels->where('name', 'like', "%$search%");
+		}
+
+		$hotels = $hotels->orderBy('id', 'desc')->take($take ?? 20)->get();
 		return send_response('Hotels retrieved successfully', 200, $hotels);
 	}
 

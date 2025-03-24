@@ -13,5 +13,4 @@ class Meal extends Model
 
 	protected $table = 'meals';
 	protected $fillable = ['meal_type', 'state'];
-	protected $hidden = ['deleted_at'];
 }
