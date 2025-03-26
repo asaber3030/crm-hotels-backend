@@ -8,10 +8,20 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class VoucherController extends Controller
 {
-	public function index()
+	public function index(Request $request)
 	{
-		$vouchers = Voucher::with(['hotel', 'meal', 'city', 'company', 'room'])->orderBy('id', 'desc')->paginate();
-		return send_response('Vouchers retrieved successfully', 200, $vouchers);
+		$vouchers = Voucher::query();
+
+		if ($request->query('search')) {
+			$search = $request->query('search');
+			$vouchers->where('client_name', 'like', "%$search%");
+		}
+
+		$data = $vouchers
+			->with(['hotel', 'meal', 'city', 'company', 'room'])
+			->orderBy('id', 'desc')
+			->paginate();
+		return send_response('Vouchers retrieved successfully', 200, $data);
 	}
 
 	public function store(Request $request)
@@ -22,6 +32,8 @@ class VoucherController extends Controller
 			'city_id' => 'required|exists:cities,id',
 			'meal_id' => 'required|exists:meals,id',
 			'company_id' => 'required|exists:companies,id',
+			'rate_id' => 'required|exists:rates,id',
+			'payment_type_id' => 'required|exists:payments_types,id',
 			'rooms_count' => 'required|integer|min:1',
 			'view' => 'required|string|max:255',
 			'pax' => 'required|integer|min:1',
@@ -34,8 +46,9 @@ class VoucherController extends Controller
 			'client_name' => 'required|string|max:255',
 			'notes' => 'nullable|string',
 			'arrival_date' => 'required|date',
-			'departure_date' => 'required|date|after:arrival_date',
+			'departure_date' => 'required|date',
 			'nights' => 'required|integer|min:1',
+			'holder_name' => 'required|string|max:255',
 		]);
 
 		$voucher = Voucher::create($request->only([
@@ -44,6 +57,8 @@ class VoucherController extends Controller
 			'city_id',
 			'meal_id',
 			'company_id',
+			'rate_id',
+			'payment_type_id',
 			'rooms_count',
 			'view',
 			'pax',
@@ -55,6 +70,10 @@ class VoucherController extends Controller
 			'nationality',
 			'client_name',
 			'notes',
+			'arrival_date',
+			'departure_date',
+			'nights',
+			'holder_name',
 		]));
 
 		return send_response('Voucher created successfully', 201, $voucher);
@@ -67,7 +86,9 @@ class VoucherController extends Controller
 			'meal',
 			'company',
 			'city',
-			'room'
+			'room',
+			'rate',
+			'payment_type'
 		])->find($id);
 
 		if (!$voucher) {
@@ -108,22 +129,25 @@ class VoucherController extends Controller
 		]);
 
 		$voucher->update($request->only([
-			'reservation_id',
+			'room_id',
 			'hotel_id',
 			'city_id',
 			'meal_id',
 			'company_id',
-			'rate_id',
-			'check_in',
-			'check_out',
 			'rooms_count',
 			'view',
-			'pax_count',
+			'pax',
 			'adults',
 			'children',
-			'option_date',
-			'confirmation_number',
-			'price',
+			'status',
+			'internal_confirmation',
+			'hcn',
+			'nationality',
+			'client_name',
+			'notes',
+			'arrival_date',
+			'departure_date',
+			'nights',
 		]));
 
 		return send_response('Voucher updated successfully', 200, $voucher);

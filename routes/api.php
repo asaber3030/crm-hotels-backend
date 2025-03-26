@@ -61,6 +61,8 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('reservations', ReservationController::class);
 		Route::get('/reservations-small', [ReservationController::class, 'small']);
+		Route::get('/reservations-stats', [ReservationController::class, 'stats']);
+		Route::get('/reservations-mine', [ReservationController::class, 'mine']);
 		Route::post('/reservations/create', [ReservationController::class, 'createFullReservation']);
 		Route::post('/reservations/create-with-new-client', [ReservationController::class, 'storeWithNewClient']);
 		Route::patch('/reservations/{id}/update-with-new-client', [ReservationController::class, 'updateWithNewClient']);
@@ -109,6 +111,8 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('hotel-reservations', HotelReservationController::class);
 		Route::get('/hotel-reservations-trashed', [HotelReservationController::class, 'trashed']);
+		Route::get('/hotel-reservations-only', [HotelReservationController::class, 'onlyHotelReservations']);
+		Route::get('/hotel-reservations-mine', [HotelReservationController::class, 'mine']);
 		Route::patch('/hotel-reservations/{id}/restore', [HotelReservationController::class, 'restore']);
 		Route::patch('/hotel-reservations/{id}/change-status', [HotelReservationController::class, 'change_status']);
 		Route::post('/hotel-reservations/{id}/send-voucher', [HotelReservationController::class, 'send_voucher']);

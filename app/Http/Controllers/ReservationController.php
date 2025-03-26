@@ -404,4 +404,51 @@ class ReservationController extends Controller
 			return send_response('Failed to update reservation', 500, ['error' => $e->getMessage()]);
 		}
 	}
+
+	public function stats()
+	{
+		$countRoomsToday = HotelReservation::whereDate('check_in', today())->count();
+		$countRoomsTomorrow = HotelReservation::whereDate('check_in', today()->addDay())->count();
+
+		$countAirportToday = AirportReservation::whereDate('arrival_date', today())->count();
+		$countAirportTomorrow = AirportReservation::whereDate('arrival_date', today()->addDay())->count();
+
+		$reservations = [
+			'new' => HotelReservation::where([
+				'status' => 'new',
+				'check_in' => today()
+			])->count(),
+			'done' => HotelReservation::where([
+				'status' => 'done',
+				'check_in' => today()
+			])->count(),
+			'cancelled' => HotelReservation::where([
+				'status' => 'cancelled',
+				'check_in' => today()
+			])->count(),
+			'in_revision' => HotelReservation::where([
+				'status' => 'in_revision',
+				'check_in' => today()
+			])->count(),
+		];
+
+		$countCarToday = CarReservation::whereDate('arrival_date', today())->count();
+		$countCarTomorrow = CarReservation::whereDate('arrival_date', today()->addDay())->count();
+
+		return send_response('Stats Data', 200, [
+			'rooms' => [
+				'today' => $countRoomsToday,
+				'tomorrow' => $countRoomsTomorrow
+			],
+			'airport' => [
+				'today' => $countAirportToday,
+				'tomorrow' => $countAirportTomorrow
+			],
+			'car' => [
+				'today' => $countCarToday,
+				'tomorrow' => $countCarTomorrow
+			],
+			'reservations' => $reservations
+		]);
+	}
 }

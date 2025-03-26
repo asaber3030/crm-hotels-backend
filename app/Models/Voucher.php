@@ -13,6 +13,8 @@ class Voucher extends Model
 		'hotel_id',
 		'meal_id',
 		'room_id',
+		'rate_id',
+		'payment_type_id',
 		'view',
 		'adults',
 		'children',
@@ -27,6 +29,7 @@ class Voucher extends Model
 		'arrival_date',
 		'departure_date',
 		'nights',
+		'holder_name'
 	];
 
 	public function company()
@@ -52,5 +55,15 @@ class Voucher extends Model
 	public function room()
 	{
 		return $this->belongsTo(Room::class, 'room_id', 'id');
+	}
+
+	public function rate()
+	{
+		return $this->belongsTo(Rate::class, 'rate_id', 'id');
+	}
+
+	public function payment_type()
+	{
+		return $this->belongsTo(PaymentType::class, 'payment_type_id', 'id');
 	}
 }
