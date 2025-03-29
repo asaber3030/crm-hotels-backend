@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('vouchers', function (Blueprint $table) {
-            $table->date('arrival_date')->nullable();
-            $table->date('departure_date')->nullable();
-            $table->integer('nights')->nullable();
+        Schema::table('agents', function (Blueprint $table) {
+            $table->enum('role', ['admin', 'reservation', 'finance'])->change();
+            $table->timestamp('created_at')->default(now())->change();
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('vouchers', function (Blueprint $table) {
+        Schema::table('agents', function (Blueprint $table) {
             //
         });
     }

@@ -41,6 +41,14 @@ class AirportReservationController extends Controller
 		return send_response('Airport reservations retrieved successfully', 200, $data);
 	}
 
+	public function trashed()
+	{
+		$deletedReservations = AirportReservation::with([
+			'reservation' => fn($query) => $query->with('client'),
+		])->orderBy('id', 'desc')->onlyTrashed()->paginate();
+		return send_response('Deleted airport reservations retrieved successfully', 200, $deletedReservations);
+	}
+
 	public function change_status(Request $request, $id)
 	{
 		$airportReservation = AirportReservation::find($id);
@@ -273,12 +281,6 @@ class AirportReservationController extends Controller
 		}
 		$reservation->delete();
 		return send_response('Airport reservation deleted successfully', 200);
-	}
-
-	public function trashed()
-	{
-		$deletedReservations = AirportReservation::onlyTrashed()->paginate();
-		return send_response('Deleted airport reservations retrieved successfully', 200, $deletedReservations);
 	}
 
 	public function restore($id)

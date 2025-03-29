@@ -274,7 +274,15 @@ class HotelReservationController extends Controller
 
 	public function trashed()
 	{
-		$deletedHotelReservations = HotelReservation::onlyTrashed()->paginate();
+		$deletedHotelReservations = HotelReservation::with([
+			'rate',
+			'hotel',
+			'meal',
+			'city',
+			'company',
+			'room',
+			'reservation' => fn($query) => $query->with('client')
+		])->onlyTrashed()->paginate();
 		return send_response('Deleted hotel reservations retrieved successfully', 200, $deletedHotelReservations);
 	}
 

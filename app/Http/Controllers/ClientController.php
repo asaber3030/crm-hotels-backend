@@ -33,6 +33,12 @@ class ClientController extends Controller
 		return send_response('Clients retrieved successfully', 200, $data);
 	}
 
+	public function trashed()
+	{
+		$deletedClients = Client::onlyTrashed()->paginate();
+		return send_response('Deleted clients retrieved successfully', 200, $deletedClients);
+	}
+
 	public function store(Request $request)
 	{
 		$request->validate([
@@ -86,12 +92,6 @@ class ClientController extends Controller
 
 		$client->delete();
 		return send_response('Client deleted successfully', 200);
-	}
-
-	public function trashed()
-	{
-		$deletedClients = Client::onlyTrashed()->paginate();
-		return send_response('Deleted clients retrieved successfully', 200, $deletedClients);
 	}
 
 	public function restore($id)

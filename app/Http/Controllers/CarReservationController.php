@@ -44,6 +44,15 @@ class CarReservationController extends Controller
 		return send_response('Car reservations retrieved successfully', 200, $data);
 	}
 
+	public function trashed()
+	{
+		$deletedCarReservations = CarReservation::with([
+			'driver',
+			'reservation' => fn($q) => $q->with('client')
+		])->orderBy('id', 'desc')->onlyTrashed()->paginate();
+		return send_response('Deleted car reservations retrieved successfully', 200, $deletedCarReservations);
+	}
+
 	public function store(Request $request)
 	{
 		$request->validate([
@@ -218,12 +227,6 @@ class CarReservationController extends Controller
 
 		$carReservation->delete();
 		return send_response('Car reservation deleted successfully', 200);
-	}
-
-	public function trashed()
-	{
-		$deletedCarReservations = CarReservation::onlyTrashed()->paginate();
-		return send_response('Deleted car reservations retrieved successfully', 200, $deletedCarReservations);
 	}
 
 	public function restore($id)
