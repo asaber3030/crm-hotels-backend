@@ -109,6 +109,7 @@ class ReservationController extends Controller
 			->with([
 				'reservation' => function ($q) {
 					$q
+						->where('deleted_at', null)
 						->select('id', 'client_id', 'agent_id')
 						->with(['client:id,name', 'agent:id,name']);
 				},
@@ -209,9 +210,44 @@ class ReservationController extends Controller
 
 
 			if ($request->has('hotel')) {
-				$hotelData = $request->input('hotel');
+				$hotelData = [
+					'hotel_id' => $request->input('hotel.hotel_id'),
+					'city_id' => $request->input('hotel.city_id'),
+					'meal_id' => $request->input('hotel.meal_id'),
+					'company_id' => $request->input('hotel.company_id'),
+					'payment_type_id' => $request->input('hotel.payment_type_id'),
+					'rate_id' => $request->input('hotel.rate_id'),
+					'check_in' => \Carbon\Carbon::parse($request->input('hotel.check_in'))->format('Y-m-d'),
+					'check_out' => \Carbon\Carbon::parse($request->input('hotel.check_out'))->format('Y-m-d'),
+					'rooms_count' => $request->input('hotel.rooms_count'),
+					'price_type' => $request->input('hotel.price_type'),
+					'view' => $request->input('hotel.view'),
+					'pax_count' => $request->input('hotel.pax_count'),
+					'status' => $request->input('hotel.status'),
+					'adults' => $request->input('hotel.adults'),
+					'children' => $request->input('hotel.children'),
+					'option_date' => \Carbon\Carbon::parse($request->input('hotel.option_date'))->format('Y-m-d'),
+					'confirmation_number' => $request->input('hotel.confirmation_number'),
+					'price' => $request->input('hotel.price', 0) ? $request->input('hotel.price') : 0,
+				];
 				$hotelData['reservation_id'] = $reservation->id;
-				HotelReservation::create($hotelData);
+				$res = HotelReservation::create($hotelData);
+
+				if ($request->input('hotel.price_type') === 'static') {
+					$price = $request->input('hotel.price');
+					$res->update(['price' => $price]);
+				} elseif ($request->input('hotel.price_type') === 'dynamic') {
+					$priceList = $request->input('hotel.price_list');
+					foreach ($priceList as $priceData) {
+						$res->prices()->create([
+							'hotel_reservation_id' => $res->id,
+							'day_number' => $priceData['day_number'],
+							'price' => $priceData['price'],
+						]);
+					}
+					$price = $res->prices()->sum('price');
+					$res->update(['price' => $price]);
+				}
 			}
 
 			if ($request->has('car')) {

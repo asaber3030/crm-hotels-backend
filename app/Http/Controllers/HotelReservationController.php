@@ -159,6 +159,10 @@ class HotelReservationController extends Controller
 			'rate_id' => 'required|exists:rates,id',
 			'check_in' => 'required|date',
 			'check_out' => 'required|date|after:check_in',
+			'price_type' => 'required|string|in:dynamic,static',
+			'price_list' => 'sometimes|array',
+			'price_list.*.price' => 'required|numeric|min:0',
+			'price_list.*.day_number' => 'required|integer|min:0',
 			'rooms_count' => 'required|integer|min:1',
 			'view' => 'required|string|max:255',
 			'pax_count' => 'required|integer|min:1',
@@ -167,10 +171,12 @@ class HotelReservationController extends Controller
 			'children' => 'required|integer|min:0',
 			'option_date' => 'required|date',
 			'confirmation_number' => 'required|string|max:255',
-			'price' => 'required|numeric|min:0',
+			'price' => 'sometimes|numeric|min:0',
 		]);
 
-		$hotelReservation = HotelReservation::create($request->only([
+		$price = 0;
+
+		$data = $request->only([
 			'reservation_id',
 			'hotel_id',
 			'city_id',
@@ -180,6 +186,7 @@ class HotelReservationController extends Controller
 			'check_in',
 			'check_out',
 			'rooms_count',
+			'price_type',
 			'view',
 			'pax_count',
 			'adults',
@@ -187,9 +194,27 @@ class HotelReservationController extends Controller
 			'option_date',
 			'confirmation_number',
 			'price',
-		]));
+		]);
 
-		return send_response('Hotel reservation created successfully', 201, $hotelReservation);
+		$res = HotelReservation::create($data);
+
+		if ($request->input('price_type') === 'static') {
+			$price = $request->input('price');
+			$res->update(['price' => $price]);
+		} elseif ($request->input('price_type') === 'dynamic') {
+			$priceList = $request->input('price_list');
+			foreach ($priceList as $priceData) {
+				$res->prices()->create([
+					'hotel_reservation_id' => $res->id,
+					'day_number' => $priceData['day_number'],
+					'price' => $priceData['price'],
+				]);
+			}
+			$price = $res->prices()->sum('price');
+			$res->update(['price' => $price]);
+		}
+
+		return send_response('Hotel reservation created successfully', 201, $res);
 	}
 
 	public function show($id)
@@ -200,6 +225,7 @@ class HotelReservationController extends Controller
 			'meal',
 			'company',
 			'city',
+			'prices',
 			'rate'
 		])->find($id);
 
@@ -214,9 +240,7 @@ class HotelReservationController extends Controller
 	{
 		$hotelReservation = HotelReservation::find($id);
 
-		if (!$hotelReservation) {
-			return send_response('Hotel reservation not found', 404);
-		}
+		if (!$hotelReservation) return send_response('Hotel reservation not found', 404);
 
 		$request->validate([
 			'reservation_id' => 'sometimes|exists:reservations,id',
@@ -225,6 +249,7 @@ class HotelReservationController extends Controller
 			'meal_id' => 'sometimes|exists:meals,id',
 			'company_id' => 'sometimes|exists:companies,id',
 			'rate_id' => 'sometimes|exists:rates,id',
+			'price_type' => 'sometimes|string|in:dynamic,static',
 			'check_in' => 'sometimes|date',
 			'check_out' => 'sometimes|date|after:check_in',
 			'rooms_count' => 'sometimes|integer|min:1',
@@ -236,6 +261,9 @@ class HotelReservationController extends Controller
 			'option_date' => 'sometimes|date',
 			'confirmation_number' => 'sometimes|string|max:255',
 			'price' => 'sometimes|numeric|min:0',
+			'price_list' => 'sometimes|array',
+			'price_list.*.price' => 'required_with:price_list|numeric|min:0',
+			'price_list.*.day_number' => 'required_with:price_list|integer|min:0',
 		]);
 
 		$hotelReservation->update($request->only([
@@ -254,11 +282,32 @@ class HotelReservationController extends Controller
 			'children',
 			'option_date',
 			'confirmation_number',
-			'price',
+			'status',
+			'price_type',
 		]));
+
+		$priceType = $request->input('price_type', $hotelReservation->price_type);
+
+		if ($priceType === 'static') {
+			$price = $request->input('price', $hotelReservation->price);
+			$hotelReservation->update(['price' => $price]);
+		} elseif ($priceType === 'dynamic' && $request->has('price_list')) {
+			$hotelReservation->prices()->delete();
+			$priceList = $request->input('price_list');
+			foreach ($priceList as $priceData) {
+				$hotelReservation->prices()->create([
+					'hotel_reservation_id' => $hotelReservation->id,
+					'day_number' => $priceData['day_number'],
+					'price' => $priceData['price'],
+				]);
+			}
+			$price = $hotelReservation->prices()->sum('price');
+			$hotelReservation->update(['price' => $price]);
+		}
 
 		return send_response('Hotel reservation updated successfully', 200, $hotelReservation);
 	}
+
 
 	public function destroy($id)
 	{
@@ -312,6 +361,19 @@ class HotelReservationController extends Controller
 		HotelReservation::where('id', $id)->update(['status' => $request->status]);
 		$hotelReservation = HotelReservation::find($id);
 		return send_response('Hotel reservation status updated successfully', 200, $hotelReservation);
+	}
+
+	public function change_many_status(Request $request)
+	{
+		$request->validate([
+			'ids' => 'required|array',
+			'ids.*' => 'required|integer|exists:hotel_reservations,id',
+			'status' => 'required|string|in:new,in_revision,confirmed,refunded,cancelled,guaranteed',
+		]);
+
+		HotelReservation::whereIn('id', $request->ids)->update(['status' => $request->status]);
+
+		return send_response('Hotel reservations status updated successfully', 200);
 	}
 
 	public function send_voucher($id)

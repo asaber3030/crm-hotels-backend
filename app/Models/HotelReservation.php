@@ -21,6 +21,7 @@ class HotelReservation extends Model
 		'rate_id',
 		'payment_type_id',
 		'check_in',
+		'price_type',
 		'check_out',
 		'rooms_count',
 		'status',
@@ -47,6 +48,11 @@ class HotelReservation extends Model
 	public function reservation()
 	{
 		return $this->belongsTo(Reservation::class, 'reservation_id', 'id');
+	}
+
+	public function prices()
+	{
+		return $this->hasMany(HotelReservationPrice::class, 'hotel_reservation_id', 'id');
 	}
 
 	public function meal()

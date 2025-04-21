@@ -113,6 +113,7 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::get('/hotel-reservations-trashed', [HotelReservationController::class, 'trashed']);
 		Route::get('/hotel-reservations-only', [HotelReservationController::class, 'onlyHotelReservations']);
 		Route::get('/hotel-reservations-mine', [HotelReservationController::class, 'mine']);
+		Route::patch('/hotel-reservations/change-many-status/status', [HotelReservationController::class, 'change_many_status']);
 		Route::patch('/hotel-reservations/{id}/restore', [HotelReservationController::class, 'restore']);
 		Route::patch('/hotel-reservations/{id}/change-status', [HotelReservationController::class, 'change_status']);
 		Route::post('/hotel-reservations/{id}/send-voucher', [HotelReservationController::class, 'send_voucher']);

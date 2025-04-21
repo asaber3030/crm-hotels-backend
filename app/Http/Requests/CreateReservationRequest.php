@@ -28,7 +28,11 @@ class CreateReservationRequest extends FormRequest
 			'hotel.company_id' => 'required|integer|exists:companies,id',
 			'hotel.rate_id' => 'required|integer|exists:rates,id',
 			'hotel.check_in' => 'required|date',
-			'hotel.check_out' => 'required|date',
+			'hotel.check_out' => 'required|date|after:hotel.check_in',
+			'hotel.price_type' => 'required|string|in:dynamic,static',
+			'hotel.price_list' => 'sometimes|array',
+			'hotel.price_list.*.price' => 'required|numeric|min:0',
+			'hotel.price_list.*.day_number' => 'required|integer|min:0',
 			'hotel.rooms_count' => 'required|integer|min:1',
 			'hotel.view' => 'required|string|max:255',
 			'hotel.pax_count' => 'required|integer|min:1',
@@ -37,7 +41,7 @@ class CreateReservationRequest extends FormRequest
 			'hotel.option_date' => 'required|date',
 			'hotel.status' => 'required|in:new,in_revision,confirmed,cancelled,refunded,guaranteed',
 			'hotel.confirmation_number' => 'required|string|max:50',
-			'hotel.price' => 'required|numeric|min:0',
+			'hotel.price' => 'nullable|numeric|min:0',
 
 			// Airport Reservation (Optional)
 			'airport.email' => 'sometimes|required|email|max:255',
