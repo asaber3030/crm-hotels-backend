@@ -16,6 +16,7 @@ class Reservation extends Model
 		'client_id',
 		'agent_id',
 		'reservation_date',
+		'has_sent_email',
 		'notes',
 	];
 

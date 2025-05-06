@@ -24,4 +24,9 @@ class Hotel extends Model
 	{
 		return $this->belongsTo(City::class);
 	}
+
+	public function emails()
+	{
+		return $this->hasMany(HotelEmail::class, 'hotel_id', 'id');
+	}
 }

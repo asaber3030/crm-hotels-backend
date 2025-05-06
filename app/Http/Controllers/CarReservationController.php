@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Reservation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 class CarReservationController extends Controller
 {
@@ -44,6 +45,46 @@ class CarReservationController extends Controller
 		return send_response('Car reservations retrieved successfully', 200, $data);
 	}
 
+	public function logs($id)
+	{
+		$logs = Activity::where('subject_type', CarReservation::class)
+			->where('subject_id', $id)
+			->with([
+				'causer',
+				'subject' => fn($query) => $query->with([
+					'driver:id,name',
+					'reservation' => fn($query) => $query
+						->select('id', 'client_id')
+						->with('client:id,name,email,phone,nationality'),
+					'driver:id,name',
+				])
+			])
+			->latest()
+			->paginate();
+
+		return send_response('Car reservation logs retrieved successfully', 200, $logs);
+	}
+
+	public function single_log($id, $logId)
+	{
+		$log = Activity::where('subject_type', CarReservation::class)
+			->where('subject_id', $id)
+			->with([
+				'causer',
+				'subject' => fn($query) => $query->with([
+					'driver:id,name',
+					'reservation' => fn($query) => $query
+						->select('id', 'client_id')
+						->with('client:id,name,email,phone,nationality'),
+					'driver:id,name',
+				])
+			])
+			->latest()
+			->find($logId);
+
+		return send_response('Car reservation log retrieved successfully', 200, $log);
+	}
+
 	public function trashed()
 	{
 		$deletedCarReservations = CarReservation::with([
@@ -60,7 +101,7 @@ class CarReservationController extends Controller
 			'client_name' => 'required_without:client_id|string|max:255',
 			'phone' => 'required_without:client_id|string|max:255|unique:clients,phone',
 			'nationality' => 'required_without:client_id|string|max:255',
-			'email' => 'sometimes|string|max:255|unique:clients,phone',
+			'email' => 'required_without:client_id|string|max:255|unique:clients,phone',
 			'driver_id' => 'required|exists:drivers,id',
 			'airline' => 'required|string|max:255',
 			'meeting_point' => 'required|string|max:255',

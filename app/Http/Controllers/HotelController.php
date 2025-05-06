@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateReservationRequest;
 use Illuminate\Http\Request;
 use App\Models\Hotel;
+use App\Models\HotelEmail;
 use App\Models\Room;
 
 class HotelController extends Controller
@@ -125,5 +126,11 @@ class HotelController extends Controller
 	{
 		$rooms = Room::where('hotel_id', $id)->get();
 		return send_response('Hotel rooms retrieved successfully', 200, $rooms);
+	}
+
+	public function hotelEmails($id)
+	{
+		$emails = HotelEmail::where('hotel_id', $id)->get();
+		return send_response('Hotel emails retrieved successfully', 200, $emails);
 	}
 }

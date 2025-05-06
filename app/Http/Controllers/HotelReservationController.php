@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\HotelReservation;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 class HotelReservationController extends Controller
 {
@@ -51,6 +52,52 @@ class HotelReservationController extends Controller
 		$hotelReservations = $query->orderBy('id', 'desc')->paginate();
 
 		return send_response('Hotel reservations retrieved successfully', 200, $hotelReservations);
+	}
+
+	public function logs($id)
+	{
+		$logs = Activity::where('subject_type', HotelReservation::class)
+			->where('subject_id', $id)
+			->with([
+				'causer',
+				'subject' => fn($query) => $query->with([
+					'hotel:id,name',
+					'meal:id,meal_type',
+					'city:id,name',
+					'company:id,name',
+					'reservation' => fn($query) => $query
+						->select('id', 'client_id')
+						->with('client:id,name,email,phone,nationality'),
+					'room:id,room_type'
+				])
+			])
+			->latest()
+			->paginate();
+
+		return send_response('Hotel reservation logs retrieved successfully', 200, $logs);
+	}
+
+	public function single_log($id, $logId)
+	{
+		$log = Activity::where('subject_type', HotelReservation::class)
+			->where('subject_id', $id)
+			->with([
+				'causer',
+				'subject' => fn($query) => $query->with([
+					'hotel:id,name',
+					'meal:id,meal_type',
+					'city:id,name',
+					'company:id,name',
+					'reservation' => fn($query) => $query
+						->select('id', 'client_id')
+						->with('client:id,name,email,phone,nationality'),
+					'room:id,room_type'
+				])
+			])
+			->latest()
+			->find($logId);
+
+		return send_response('Hotel reservation log retrieved successfully', 200, $log);
 	}
 
 	public function mine(Request $request)

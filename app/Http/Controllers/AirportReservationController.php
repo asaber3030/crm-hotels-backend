@@ -8,6 +8,7 @@ use App\Models\Reservation;
 use App\Models\Client;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 class AirportReservationController extends Controller
 {
@@ -39,6 +40,42 @@ class AirportReservationController extends Controller
 			'reservation' => fn($query) => $query->with('client'),
 		])->orderBy('id', 'desc')->paginate();
 		return send_response('Airport reservations retrieved successfully', 200, $data);
+	}
+
+	public function logs($id)
+	{
+		$logs = Activity::where('subject_type', AirportReservation::class)
+			->where('subject_id', $id)
+			->with([
+				'causer',
+				'subject' => fn($query) => $query->with([
+					'reservation' => fn($query) => $query
+						->select('id', 'client_id')
+						->with('client:id,name,email,phone,nationality'),
+				])
+			])
+			->latest()
+			->paginate();
+
+		return send_response('Airport reservation logs retrieved successfully', 200, $logs);
+	}
+
+	public function single_log($id, $logId)
+	{
+		$log = Activity::where('subject_type', AirportReservation::class)
+			->where('subject_id', $id)
+			->with([
+				'causer',
+				'subject' => fn($query) => $query->with([
+					'reservation' => fn($query) => $query
+						->select('id', 'client_id')
+						->with('client:id,name,email,phone,nationality'),
+				])
+			])
+			->latest()
+			->find($logId);
+
+		return send_response('Airport reservation log retrieved successfully', 200, $log);
 	}
 
 	public function trashed()
@@ -74,8 +111,8 @@ class AirportReservationController extends Controller
 			'client_id' => 'sometimes|exists:clients,id',
 			'client_name' => 'required_without:client_id|string|max:255',
 			'phone' => 'required_without:client_id|string|max:255|unique:clients,phone',
-			'nationality' => 'sometimes|string|max:255',
-			'email' => 'sometimes|string|max:255|unique:clients,phone',
+			'nationality' => 'required_without:client_id|string|max:255',
+			'email' => 'required_without:client_id|string|max:255|unique:clients,phone',
 			'airport_name' => 'required|string|max:255',
 			'airline' => 'required|string|max:255',
 			'runner' => 'required|string|max:255',

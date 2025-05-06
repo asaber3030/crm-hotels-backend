@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 class HotelReservation extends Model
 {
 
-	use SoftDeletes, HasFactory;
+	use SoftDeletes, HasFactory, LogsActivity;
 
 	protected $fillable = [
 		'reservation_id',
@@ -34,6 +37,19 @@ class HotelReservation extends Model
 		'price'
 	];
 
+	public function getActivitylogOptions(): LogOptions
+	{
+		return LogOptions::defaults()
+			->logOnly($this->fillable)
+			->useLogName('hotel_reservation')
+
+			->setDescriptionForEvent(fn(string $eventName) => "HotelReservation has been {$eventName}");
+	}
+
+	public function activities()
+	{
+		return $this->morphMany(Activity::class, 'subject');
+	}
 
 	public function hotel()
 	{

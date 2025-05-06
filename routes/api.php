@@ -14,8 +14,12 @@ use	App\Http\Controllers\MealController;
 use App\Http\Controllers\RateController;
 use App\Http\Controllers\AirportReservationController;
 use App\Http\Controllers\CarReservationController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\HotelEmailController;
 use App\Http\Controllers\HotelReservationController;
+use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\PaymentTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherController;
@@ -25,7 +29,6 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 	Route::controller(AuthController::class)->group(function () {
 		Route::post('login', 'login')->name('login');
-
 		Route::middleware('auth:sanctum')->group(function () {
 			Route::get('me', 'me');
 		});
@@ -52,32 +55,33 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::get('/hotels-trashed', [HotelController::class, 'trashed']);
 		Route::get('/hotels-all', [HotelController::class, 'all']);
 		Route::get('/hotels/filter/{city}', [HotelController::class, 'filter_by_city']);
-		Route::get('/hotels/{id}/rooms', [HotelController::class, 'hotelRooms']);
 		Route::patch('/hotels/{id}/restore', [HotelController::class, 'restore']);
+		Route::get('/hotels/{id}/rooms', [HotelController::class, 'hotelRooms']);
+		Route::get('/hotels/{id}/emails', [HotelController::class, 'hotelEmails']);
 
 		Route::apiResource('agents', AgentController::class);
 		Route::get('/agents-trashed', [AgentController::class, 'trashed']);
 		Route::patch('/agents/{id}/restore', [AgentController::class, 'restore']);
 
-		Route::apiResource('reservations', ReservationController::class);
-		Route::get('/reservations-small', [ReservationController::class, 'small']);
-		Route::get('/reservations-stats', [ReservationController::class, 'stats']);
-		Route::get('/reservations-mine', [ReservationController::class, 'mine']);
-		Route::post('/reservations/create', [ReservationController::class, 'createFullReservation']);
-		Route::post('/reservations/create-with-new-client', [ReservationController::class, 'storeWithNewClient']);
-		Route::patch('/reservations/{id}/update-with-new-client', [ReservationController::class, 'updateWithNewClient']);
-		Route::get('/reservations/status/{status}', [ReservationController::class, 'filter_status']);
-		Route::get('/reservations-option-date', [ReservationController::class, 'option_date_data']);
-		Route::controller(ReservationController::class)->prefix('reservations')->group(function () {
-			Route::get('/{id}/car-reservation', 'carReservation');
-			Route::get('/{id}/hotel-reservation', 'hotelReservation');
-			Route::get('/{id}/airport-reservation', 'airportReservation');
-		});
-
 		Route::apiResource('clients', ClientController::class);
 		Route::get('/clients-trashed', [ClientController::class, 'trashed']);
 		Route::get('/clients-all', [ClientController::class, 'all']);
 		Route::patch('/clients/{id}/restore', [ClientController::class, 'restore']);
+
+		Route::apiResource('categories', CategoryController::class);
+		Route::get('/categories-trashed', [CategoryController::class, 'trashed']);
+		Route::get('/categories-all', [CategoryController::class, 'all']);
+		Route::patch('/categories/{id}/restore', [CategoryController::class, 'restore']);
+
+		Route::apiResource('currencies', CurrencyController::class);
+		Route::get('/currencies-trashed', [CurrencyController::class, 'trashed']);
+		Route::get('/currencies-all', [CurrencyController::class, 'all']);
+		Route::patch('/currencies/{id}/restore', [CurrencyController::class, 'restore']);
+
+		Route::apiResource('hotel-emails', HotelEmailController::class);
+		Route::get('/hotel-emails-trashed', [HotelEmailController::class, 'trashed']);
+		Route::get('/hotel-emails-all', [HotelEmailController::class, 'all']);
+		Route::patch('/hotel-emails/{id}/restore', [HotelEmailController::class, 'restore']);
 
 		Route::apiResource('users', UserController::class);
 		Route::get('/users-trashed', [UserController::class, 'trashed']);
@@ -98,26 +102,6 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::get('/rooms-all', [RoomController::class, 'all']);
 		Route::patch('/rooms/{id}/restore', [RoomController::class, 'restore']);
 
-		Route::apiResource('airport-reservations', AirportReservationController::class);
-		Route::get('/airport-reservations-trashed', [AirportReservationController::class, 'trashed']);
-		Route::patch('/airport-reservations/{id}/restore', [AirportReservationController::class, 'restore']);
-		Route::patch('/airport-reservations/{id}/status', [AirportReservationController::class, 'change_status']);
-		Route::patch('/airport-reservations/{id}/update-with-new-client', [AirportReservationController::class, 'updateWithNewClient']);
-
-		Route::apiResource('car-reservations', CarReservationController::class);
-		Route::get('/car-reservations-trashed', [CarReservationController::class, 'trashed']);
-		Route::patch('/car-reservations/{id}/restore', [CarReservationController::class, 'restore']);
-		Route::patch('/car-reservations/{id}/status', [CarReservationController::class, 'change_status']);
-
-		Route::apiResource('hotel-reservations', HotelReservationController::class);
-		Route::get('/hotel-reservations-trashed', [HotelReservationController::class, 'trashed']);
-		Route::get('/hotel-reservations-only', [HotelReservationController::class, 'onlyHotelReservations']);
-		Route::get('/hotel-reservations-mine', [HotelReservationController::class, 'mine']);
-		Route::patch('/hotel-reservations/change-many-status/status', [HotelReservationController::class, 'change_many_status']);
-		Route::patch('/hotel-reservations/{id}/restore', [HotelReservationController::class, 'restore']);
-		Route::patch('/hotel-reservations/{id}/change-status', [HotelReservationController::class, 'change_status']);
-		Route::post('/hotel-reservations/{id}/send-voucher', [HotelReservationController::class, 'send_voucher']);
-
 		Route::apiResource('meals', MealController::class);
 		Route::get('/meals-trashed', [MealController::class, 'trashed']);
 		Route::get('/meals-all', [MealController::class, 'all']);
@@ -136,6 +120,51 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::get('/payment-types-trashed', [PaymentTypeController::class, 'trashed']);
 		Route::get('/payment-types-all', [PaymentTypeController::class, 'all']);
 		Route::patch('/payment-types/{id}/restore', [PaymentTypeController::class, 'restore']);
+
+		Route::apiResource('airport-reservations', AirportReservationController::class);
+		Route::get('/airport-reservations-trashed', [AirportReservationController::class, 'trashed']);
+		Route::patch('/airport-reservations/{id}/restore', [AirportReservationController::class, 'restore']);
+		Route::patch('/airport-reservations/{id}/status', [AirportReservationController::class, 'change_status']);
+		Route::patch('/airport-reservations/{id}/update-with-new-client', [AirportReservationController::class, 'updateWithNewClient']);
+		Route::get('/airport-reservations/{id}/logs', [AirportReservationController::class, 'logs']);
+		Route::get('/airport-reservations/{id}/logs/{logId}', [AirportReservationController::class, 'single_log']);
+
+		Route::apiResource('car-reservations', CarReservationController::class);
+		Route::get('/car-reservations-trashed', [CarReservationController::class, 'trashed']);
+		Route::patch('/car-reservations/{id}/restore', [CarReservationController::class, 'restore']);
+		Route::patch('/car-reservations/{id}/status', [CarReservationController::class, 'change_status']);
+		Route::get('/car-reservations/{id}/logs', [CarReservationController::class, 'logs']);
+		Route::get('/car-reservations/{id}/logs/{logId}', [CarReservationController::class, 'single_log']);
+
+		Route::apiResource('hotel-reservations', HotelReservationController::class);
+		Route::get('/hotel-reservations-trashed', [HotelReservationController::class, 'trashed']);
+		Route::get('/hotel-reservations-only', [HotelReservationController::class, 'onlyHotelReservations']);
+		Route::get('/hotel-reservations-mine', [HotelReservationController::class, 'mine']);
+		Route::patch('/hotel-reservations/change-many-status/status', [HotelReservationController::class, 'change_many_status']);
+		Route::patch('/hotel-reservations/{id}/restore', [HotelReservationController::class, 'restore']);
+		Route::get('/hotel-reservations/{id}/logs', [HotelReservationController::class, 'logs']);
+		Route::get('/hotel-reservations/{id}/logs/{logId}', [HotelReservationController::class, 'single_log']);
+		Route::patch('/hotel-reservations/{id}/change-status', [HotelReservationController::class, 'change_status']);
+		Route::post('/hotel-reservations/{id}/send-voucher', [HotelReservationController::class, 'send_voucher']);
+
+		Route::get('/hotel-reservations-history', [HistoryController::class, 'hotel_reservations_history']);
+		Route::get('/car-reservations-history', [HistoryController::class, 'car_reservations_history']);
+		Route::get('/airport-reservations-history', [HistoryController::class, 'airport_reservations_history']);
+
+		Route::apiResource('reservations', ReservationController::class);
+		Route::get('/reservations-small', [ReservationController::class, 'small']);
+		Route::get('/reservations-stats', [ReservationController::class, 'stats']);
+		Route::get('/reservations-mine', [ReservationController::class, 'mine']);
+		Route::post('/reservations/create', [ReservationController::class, 'createFullReservation']);
+		Route::post('/reservations/create-with-new-client', [ReservationController::class, 'storeWithNewClient']);
+		Route::patch('/reservations/{id}/update-with-new-client', [ReservationController::class, 'updateWithNewClient']);
+		Route::get('/reservations/status/{status}', [ReservationController::class, 'filter_status']);
+		Route::get('/reservations-option-date', [ReservationController::class, 'option_date_data']);
+		Route::controller(ReservationController::class)->prefix('reservations')->group(function () {
+			Route::get('/{id}/car-reservation', 'carReservation');
+			Route::get('/{id}/hotel-reservation', 'hotelReservation');
+			Route::get('/{id}/airport-reservation', 'airportReservation');
+		});
 	});
 
 	Route::get('/vouchers/{id}/pdf', [VoucherController::class, 'show_pdf']);

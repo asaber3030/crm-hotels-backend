@@ -32,7 +32,6 @@ class CustomerMail extends Mailable
 		return new Envelope(
 			subject: $this->data['subject'] ?? 'Customer Mail',
 			from: $this->data['from'] ?? 'abdulrahmansaber120@gmail.com',
-			cc: $this->data['cc'] ?? null,
 		);
 	}
 
@@ -46,8 +45,6 @@ class CustomerMail extends Mailable
 				'type' => $this->data['email_type'],
 				'subject' => $this->data['subject'],
 				'from' => $this->data['from'],
-				'to' => $this->data['to'],
-				'cc' => $this->data['cc'],
 				'file' => $this->data['file'],
 			],
 		);

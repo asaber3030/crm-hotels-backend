@@ -52,28 +52,16 @@
     <div class="content">
       <p><strong>Type:</strong> {{ $type }}</p>
       <p><strong>From:</strong> {{ $from }}</p>
-      <p><strong>To:</strong> {{ $to }}</p>
-
-      <p><strong>CC:</strong></p>
-      <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-        @if (!empty($cc) && count($cc) > 0)
-          @foreach ($cc as $item)
-            <p style="margin-right: 5px; padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
-              {{ $item }}
-            </p>
-          @endforeach
-        @endif
-      </div>
       <hr>
       <p>{{ $body_content }}</p>
     </div>
 
     <div>
       @if (!empty($file))
-        <h3>Attachment:</h3>
-        <a href="{{ $file['url'] }}" download>
-          {{ $file['name'] }}
-        </a>
+      <h3>Attachment:</h3>
+      <a href="{{ $file['url'] }}" download>
+        {{ $file['name'] }}
+      </a>
       @endif
     </div>
 
