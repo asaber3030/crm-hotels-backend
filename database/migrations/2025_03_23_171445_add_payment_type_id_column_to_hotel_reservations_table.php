@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('hotel_reservations', function (Blueprint $table) {
             $table->dropColumn('payment_type_id');
+            $table->dropConstrainedForeignId('payment_type_id');
             $table->bigInteger('payment_type_id')->unsigned()->nullable();
             $table->foreign('payment_type_id')->references('id')->on('payments_types');
         });
