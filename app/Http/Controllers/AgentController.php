@@ -20,6 +20,18 @@ class AgentController extends Controller
 		return send_response('Agents retrieved successfully', 200, $data);
 	}
 
+	public function all(Request $request)
+	{
+		$search = $request->query('search');
+		$query = Agent::query();
+		if ($search) {
+			$query->where('name', 'like', '%' . $search . '%')
+				->orWhere('email', 'like', '%' . $search . '%');
+		}
+		$data = $query->orderBy('id', 'desc')->limit(10)->get();
+		return send_response('Agents retrieved successfully', 200, $data);
+	}
+
 	public function trashed()
 	{
 		$deletedAgents = Agent::onlyTrashed()->paginate();

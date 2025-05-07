@@ -21,6 +21,7 @@ use App\Http\Controllers\HotelEmailController;
 use App\Http\Controllers\HotelReservationController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\PaymentTypeController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Response;
@@ -51,6 +52,10 @@ Route::as('api.')->prefix('v1/')->group(function () {
 		Route::get('/cities-all', [CityController::class, 'all']);
 		Route::patch('/cities/{id}/restore', [CityController::class, 'restore']);
 
+		Route::apiResource('invoices', InvoiceController::class);
+		Route::get('/invoices-trashed', [InvoiceController::class, 'trashed']);
+		Route::patch('/invoices/{id}/restore', [InvoiceController::class, 'restore']);
+
 		Route::apiResource('hotels', HotelController::class);
 		Route::get('/hotels-trashed', [HotelController::class, 'trashed']);
 		Route::get('/hotels-all', [HotelController::class, 'all']);
@@ -61,6 +66,7 @@ Route::as('api.')->prefix('v1/')->group(function () {
 
 		Route::apiResource('agents', AgentController::class);
 		Route::get('/agents-trashed', [AgentController::class, 'trashed']);
+		Route::get('/agents-all', [AgentController::class, 'all']);
 		Route::patch('/agents/{id}/restore', [AgentController::class, 'restore']);
 
 		Route::apiResource('clients', ClientController::class);
